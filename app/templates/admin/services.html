@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Manage Services</h1>
+<table>
+    <tr><th>ID</th><th>Name</th><th>Category</th><th>Actions</th></tr>
+    {% for service in services %}
+    <tr><td>{{ service.id }}</td><td>{{ service.name }}</td><td>{{ service.category }}</td><td>
+        <a href="{{ url_for('admin.edit_service', service_id=service.id) }}">Edit</a> |
+        <a href="{{ url_for('admin.manage_service_measurements', service_id=service.id) }}">Variations</a> |
+        <form method="POST" action="{{ url_for('admin.delete_service', service_id=service.id) }}" style="display:inline;"><button type="submit">Delete</button></form>
+    </td></tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('admin.add_service') }}">Add Service</a> | <a href="{{ url_for('admin.add_measurement_field') }}">Add Measurement Field</a>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add Measurement Field</h1>
+<form method="POST">
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Description: <textarea name="description"></textarea></label><br>
+    <label>Image URL: <input type="text" name="image_url"></label><br>
+    <button type="submit">Add</button>
+</form>
+{% endblock %}

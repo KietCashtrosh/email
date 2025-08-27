@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .profile-selector { text-align: center; margin-top: 40px; }
+    .profile-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+    .profile-card {
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #333;
+        text-align: center;
+        padding: 20px;
+        width: 150px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .profile-card:hover {
+        border-color: #007bff;
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .profile-card h3 { margin: 0; }
+    .profile-card p { color: #666; }
+</style>
+
+<div class="profile-selector">
+    <h1>Who are you shopping for today?</h1>
+    <p>Select a profile to see personalized recommendations.</p>
+    <div class="profile-grid">
+        {% for profile in profiles %}
+            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}" class="profile-card">
+                <h3>{{ profile.name }}</h3>
+                <p>{{ profile.relationship }}</p>
+            </a>
+        {% endfor %}
+        <a href="{{ url_for('customer.my_profiles') }}" class="profile-card" style="background-color: #f8f9fa;">
+            <h3>+</h3>
+            <p>Manage Profiles</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

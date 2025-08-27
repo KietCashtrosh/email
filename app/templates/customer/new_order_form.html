@@ -1,0 +1,178 @@
+{% extends "base.html" %}  {# Assuming a base template for consistency #}
+
+{% block title %}Place Your Order{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+    a {
+        text-decoration: none;
+        color: #007bff;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    h1 {
+        text-align: center;
+        color: #444;
+        margin-top: 20px;
+    }
+
+    .order-summary {
+        margin: 20px auto;
+        max-width: 600px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .measurement-form {
+        max-width: 600px;
+        margin: 20px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .measurement-form h3 {
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .measurement-form div {
+        margin-bottom: 15px;
+    }
+
+    .measurement-form label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .measurement-form small {
+        display: block;
+        margin-bottom: 5px;
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .measurement-form input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+        box-sizing: border-box;
+    }
+
+    .measurement-form input:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    .button {
+        display: inline-block;
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .button:hover {
+        background-color: #0056b3;
+    }
+
+    div[style*="background: #e2f0d9"] {
+        font-size: 1em;
+        color: #2d572c;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .error {
+        color: #dc3545;
+        font-size: 0.9em;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .measurement-form input:invalid + .error {
+        display: block;
+    }
+</style>
+
+<a href="{{ url_for('customer.tailor_profile', tailor_id=tailor_service.tailor_id) }}">&larr; Back to Tailor's Profile</a>
+<h1>Place Your Order</h1>
+
+<div class="order-summary">
+    <h2>Order Summary</h2>
+    <p><strong>Service:</strong> {{ tailor_service.service.name }}</p>
+    <p><strong>Tailor:</strong> {{ tailor_service.tailor.profile.first_name }} {{ tailor_service.tailor.profile.last_name }}</p>
+    <p><strong>Price:</strong> ₹{{ tailor_service.price }}</p>
+    <p><strong>Estimated Time:</strong> {{ tailor_service.estimated_days }} days</p>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin: 20px auto; max-width: 600px; padding: 10px; border-radius: 5px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% if saved_measurements %}
+    <div style="background: #e2f0d9;">
+        We've pre-filled the form with your saved measurements{% if loaded_profile %} from profile: <strong>"{{ loaded_profile.profile_name }}"</strong>{% endif %}. Please review and confirm or adjust as needed.
+    </div>
+{% endif %}
+
+<form class="measurement-form" method="POST" novalidate>
+    <h3>Please provide your measurements (in inches)</h3>
+    
+    {% for field in measurements %}
+        <div>
+            <label for="measurement_{{ field.id }}">{{ field.name }}</label>
+            {% if field.description %}
+                <small>{{ field.description }}</small>
+            {% endif %}
+            {% if field.image_url %}
+                <img src="{{ field.image_url }}" alt="Illustration for {{ field.name }}" style="max-width: 200px; display: block; margin: 10px 0;">
+            {% endif %}
+            <input type="number" step="0.1" 
+                   name="measurement_{{ field.id }}" 
+                   id="measurement_{{ field.id }}"
+                   value="{{ saved_measurements.get(field.id, '') | float | default('') }}"
+                   required
+                   min="0"
+                   oninvalid="this.setCustomValidity('Please enter a valid measurement (greater than 0).')"
+                   oninput="this.setCustomValidity('')">
+            <span class="error">Please enter a valid measurement (greater than 0).</span>
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="button">Confirm & Place Order</button>
+</form>
+{% endblock %}

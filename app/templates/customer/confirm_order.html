@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm Your Order</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+        .summary { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        .payment-options { margin-top: 30px; }
+        .option { border: 1px solid #ccc; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        .button { width: 100%; padding: 12px; font-size: 16px; background-color: #28a745; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Final Confirmation & Payment</h1>
+    <p>Please review your order and select a payment option.</p>
+
+    <div class="summary">
+        <h3>Order Summary</h3>
+        <p><strong>Service:</strong> {{ order.items[0].tailor_service.service.name }}</p>
+        <p><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+    </div>
+
+    <form method="POST" class="payment-options">
+        <h3>Select Payment Method</h3>
+        <div class="option">
+            <input type="radio" id="pay_cod" name="payment_option" value="cod" checked>
+            <label for="pay_cod"><strong>Pay on Delivery / Visit</strong><br><small>Pay the full amount in cash when our partner arrives.</small></label>
+        </div>
+        <div class="option">
+            <input type="radio" id="pay_advance" name="payment_option" value="advance">
+            <label for="pay_advance"><strong>Pay 30% Advance Now</strong> (₹{{ "%.2f"|format(order.total_amount * 0.3) }})<br><small>Pay the rest upon delivery.</small></label>
+        </div>
+        <div class="option">
+            <input type="radio" id="pay_full" name="payment_option" value="full">
+            <label for="pay_full"><strong>Pay Now (Full Amount)</strong><br><small>Complete the full payment online.</small></label>
+        </div>
+
+        <button type="submit" class="button">Confirm & Proceed</button>
+    </form>
+</body>
+</html>

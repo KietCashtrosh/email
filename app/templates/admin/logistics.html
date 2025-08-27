@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Delivery Statuses</h1>
+<table>
+    <tr><th>ID</th><th>Order ID</th><th>Task Type</th><th>Status</th><th>Partner</th></tr>
+    {% for log in logistics %}
+    <tr><td>{{ log.id }}</td><td>{{ log.order_id }}</td><td>{{ log.task_type }}</td><td>{{ log.status }}</td><td>{{ log.delivery_partner.profile.first_name if log.delivery_partner else 'Unassigned' }}</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

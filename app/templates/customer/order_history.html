@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Order History</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; color: #333; }
+        .header { border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .order-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .order-table th, .order-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .order-table th { background-color: #f8f9fa; }
+        .order-table tr:hover { background-color: #f1f1f1; }
+        .details-link { text-decoration: none; color: #007bff; font-weight: bold; }
+        .back-link { text-decoration: none; color: #007bff; }
+    </style>
+</head>
+{% extends "base.html" %}
+{% block title %}Order Options{% endblock %}
+
+{% block content %}
+<body>
+
+    <div class="header">
+        <a href="{{ url_for('customer.dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
+        <h1 style="text-align: center; margin-top: 10px;">Your Order History</h1>
+    </div>
+
+    {% if orders %}
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date Placed</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.created_at.strftime('%d-%b-%Y') }}</td>
+                        <td>{{ order.order_status.replace('_', ' ')|title }}</td>
+                        <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            <a href="{{ url_for('customer.order_details', order_id=order.id) }}" class="details-link">View Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You have not placed any orders yet.</p>
+    {% endif %}
+    {% endblock %}
+</body>
+</html>

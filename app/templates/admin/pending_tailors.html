@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Pending Tailors</h1>
+<table>
+    <tr><th>ID</th><th>Name</th><th>Phone</th><th>Actions</th></tr>
+    {% for tailor in tailors %}
+    <tr><td>{{ tailor.id }}</td><td>{{ tailor.profile.first_name }} {{ tailor.profile.last_name }}</td><td>{{ tailor.phone_number }}</td><td>
+        <form method="POST" action="{{ url_for('admin.approve_tailor', user_id=tailor.id) }}"><button type="submit">Approve</button></form>
+    </td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

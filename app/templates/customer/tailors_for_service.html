@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tailors for {{ service.name }}</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
+        .tailor-list { list-style: none; padding: 0; }
+        .tailor-item { border: 1px solid #eee; padding: 15px; margin-top: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
+    <h1>Showing Tailors for: {{ service.name }}</h1>
+
+    <div class="tailor-list">
+        {% if tailors %}
+            {% for tailor in tailors %}
+                <div class="tailor-item">
+                    <h3>{{ tailor.tailor_profile.business_name or (tailor.profile.first_name + ' ' + tailor.profile.last_name) }}</h3>
+                    <a href="{{ url_for('customer.tailor_profile', tailor_id=tailor.id) }}">View Profile & Services</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Sorry, no tailors are currently offering this service.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

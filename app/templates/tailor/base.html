@@ -1,0 +1,37 @@
+{# This tailor base template itself extends the main base template #}
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .tailor-nav {
+        background-color: #f8f9fa;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .tailor-nav a {
+        text-decoration: none;
+        color: #007bff;
+        margin: 0 20px;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .tailor-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="tailor-container">
+    <div class="tailor-nav">
+        <a href="{{ url_for('tailor.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('tailor.earnings') }}">Earnings</a>
+        {# You can link to the general profile page or a tailor-specific one #}
+        <a href="{{ url_for('customer.profile') }}">My Profile</a> 
+    </div>
+
+    {# This is where the content of the child pages (like the dashboard) will go #}
+    {% block tailor_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Request Home Visit</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+        .summary { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;}
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input[type="date"], select { width: 100%; padding: 8px; box-sizing: border-box; }
+        .button { width: 100%; padding: 12px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 30px; cursor: pointer; }
+        .address-option { margin-bottom: 10px; }
+        .address-option label { font-weight: normal; }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('customer.order_options', tailor_service_id=tailor_service.id) }}">&larr; Back to Options</a>
+
+    <h1>Request a Home Visit</h1>
+    <p style="text-align: center; color: #666;">Confirm your address and select a time slot for our visit.</p>
+
+    <div class="summary">
+        <p><strong>Service:</strong> {{ tailor_service.service.name }}</p>
+        <p><strong>Tailor:</strong> {{ tailor_service.tailor.profile.first_name }}</p>
+    </div>
+
+    <form method="POST">
+        
+        <h3>1. Confirm Your Address</h3>
+        {% for address in addresses %}
+        <div class="address-option">
+            <input type="radio" name="address_id" value="{{ address.id }}" id="addr_{{ address.id }}" {% if address.is_default %}checked{% endif %} required>
+            <label for="addr_{{ address.id }}">
+                <strong>{{ address.address_line1 }}</strong><br>
+                {{ address.city }}, {{ address.state }} - {{ address.postal_code }}
+            </label>
+        </div>
+        {% endfor %}
+        <a href="{{ url_for('customer.profile') }}">+ Add a new address</a>
+        <h3 style="margin-top: 30px;">2. Select a Preferred Pickup Slot</h3>
+        <div>
+            <label for="pickup_date">Date:</label>
+            <input type="date" id="pickup_date" name="pickup_date" min="{{ now.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="pickup_time">Time:</label>
+            <select id="pickup_time" name="pickup_time" required>
+                <option value="" disabled selected>-- Choose a time slot --</option>
+                <option value="09:00-11:00">Morning (9:00 AM - 11:00 AM)</option>
+                <option value="12:00-14:00">Afternoon (12:00 PM - 2:00 PM)</option>
+                <option value="15:00-17:00">Late Afternoon (3:00 PM - 5:00 PM)</option>
+                <option value="18:00-20:00">Evening (6:00 PM - 8:00 PM)</option>
+            </select>
+        </div>
+
+        <button type="submit" class="button">Confirm Request</button>
+    </form>
+
+</body>
+</html>

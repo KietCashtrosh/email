@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Select a {{ service.name }} Style{% endblock %}
+
+{% block content %}
+<style>
+    .container { max-width: 1000px; margin: auto; }
+    .page-header { text-align: center; margin: 20px 0 30px; }
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .card { 
+        border: 1px solid #ddd; 
+        border-radius: 8px; 
+        text-decoration: none; 
+        color: #333; 
+        text-align: center; 
+        overflow: hidden; 
+        background-color: #fff; 
+        transition: box-shadow 0.3s; 
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card img { 
+        width: 100%; 
+        height: 150px; 
+        object-fit: cover; 
+        background-color: #f0f0f0; /* Placeholder color */
+    }
+    .card h3 { margin: 15px 10px; }
+</style>
+
+<div class="container">
+    <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Services</a>
+    <div class="page-header">
+        <h1>Choose a style for <strong>{{ service.name }}</strong></h1>
+    </div>
+
+    <div class="grid-container">
+        {% for variation in service.variations %}
+            <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="card">
+                
+                {% if variation.image_url %}
+                    <img src="{{ variation.image_url }}" alt="{{ variation.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/220x150.png?text={{ variation.name|replace(' ', '+') }}" alt="{{ variation.name }}">
+                {% endif %}
+
+                <h3>{{ variation.name }}</h3>
+            </a>
+        {% else %}
+            <p>No specific variations are available for this service. 
+                <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}">Click here to see tailors who can provide this service.</a>
+            </p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

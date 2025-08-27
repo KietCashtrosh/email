@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Manage Variations for {{ service.name }}</h1>
+<form method="POST">
+    {% for field in all_measurements %}
+    <label><input type="checkbox" name="measurement_ids" value="{{ field.id }}" {% if field.id in current_ids %}checked{% endif %}> {{ field.name }}</label><br>
+    {% endfor %}
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

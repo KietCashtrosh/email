@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Services for {{ profile.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; text-decoration: none; color: #333; text-align: center; overflow: hidden; background-color: #fff; }
+    .card img { width: 100%; height: 120px; object-fit: cover; }
+    .card h3 { margin: 10px; }
+    .view-toggle { text-align: center; margin: 20px 0; }
+</style>
+
+<a href="{{ url_for('customer.dashboard') }}">&larr; Change Profile</a>
+
+{% if show_all %}
+    <h2 style="text-align: center;">Showing All Services</h2>
+    <div class="view-toggle">
+        <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}">Show Recommended for {{ profile.name }}</a>
+    </div>
+{% else %}
+    <h2 style="text-align: center;">Recommended Services for <strong>{{ profile.name }}</strong></h2>
+    <div class="view-toggle">
+        <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id, show='all') }}">Show All Services</a>
+    </div>
+{% endif %}
+
+
+<div class="grid-container">
+    {% for service in services %}
+        <a href="{{ url_for('customer.service_variations', service_id=service.id) }}" class="card">
+            {% if service.image_url %}
+                <img src="{{ service.image_url }}" alt="{{ service.name }}">
+            {% endif %}
+            <h3>{{ service.name }}</h3>
+        </a>
+    {% else %}
+        <p>No services found matching this filter.</p>
+    {% endfor %}
+</div>
+{% endblock %}

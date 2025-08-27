@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add New Address</title>
+    </head>
+<body>
+    <h1>Add a New Address</h1>
+    <form method="POST">
+        <div>
+            <label>Address Line 1:</label>
+            <input type="text" name="address_line1" required>
+        </div>
+        <div>
+            <label>City:</label>
+            <input type="text" name="city" required>
+        </div>
+        <div>
+            <label>State:</label>
+            <input type="text" name="state" required>
+        </div>
+        <div>
+            <label>Postal Code:</label>
+            <input type="text" name="postal_code" required>
+        </div>
+        <div>
+            <input type="checkbox" name="is_default">
+            <label>Make this my default address</label>
+        </div>
+        <button type="submit">Save Address</button>
+    </form>
+    <a href="{{ url_for('customer.profile') }}">Cancel</a>
+</body>
+</html>

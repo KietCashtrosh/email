@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add Service</h1>
+<form method="POST">
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Category: <input type="text" name="category"></label><br>
+    <button type="submit">Add</button>
+</form>
+{% endblock %}

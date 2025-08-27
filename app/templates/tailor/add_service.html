@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Service</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1 { text-align: center; }
+        label { display: block; margin-top: 20px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; margin-top: 30px; cursor: pointer; font-size: 16px; }
+        .flash { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <h1>Add a New Service to Your Profile</h1>
+    <p style="text-align: center;">Select a service from our catalog and set your price.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('tailor.add_service') }}">
+        <div>
+            <label for="service_id">Select Service:</label>
+            <select id="service_id" name="service_id" required>
+                <option value="" disabled selected>-- Choose a service --</option>
+                {% for service in master_services %}
+                    <option value="{{ service.id }}">{{ service.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="price">Your Price (₹):</label>
+            <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="e.g., 500.00">
+        </div>
+
+        <div>
+            <label for="estimated_days">Estimated Delivery Time (in days):</label>
+            <input type="number" name="estimated_days" required placeholder="e.g., 7">
+        </div>
+        
+        <button type="submit">Add Service and Set Measurements</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('tailor.dashboard') }}">Cancel and go back to Dashboard</a>
+    </p>
+
+</body>
+</html>

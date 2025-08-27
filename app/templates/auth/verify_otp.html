@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1 { text-align: center; }
+        label { display: block; margin-top: 15px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
+        .flash { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <h1>Enter Verification Code</h1>
+    <p style="text-align: center;">We've sent a 6-digit code to your phone number. Please enter it below.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.verify') }}">
+        <div>
+            <label for="otp">6-Digit OTP:</label>
+            <input type="text" id="otp" name="otp" required pattern="\d{6}" maxlength="6">
+        </div>
+        
+        <button type="submit">Verify & Login</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        Didn't receive a code? <a href="{{ url_for('auth.login') }}">Go back and try again</a>
+    </p>
+</body>
+</html>

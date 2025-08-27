@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}My Family Profiles{% endblock %}
+
+{% block content %}
+<style>
+    .profile-container { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; }
+    .form-section, .list-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, select { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; }
+    button { width: 100%; padding: 12px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
+    .profile-list-item { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+</style>
+
+<a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
+<h1>My Family Profiles</h1>
+<p>Add profiles for family members to save their measurements and personalize your shopping experience.</p>
+
+<div class="profile-container">
+    <div class="form-section">
+        <h2>Add New Profile</h2>
+        <form method="POST">
+            <div>
+                <label for="name">Name:</label>
+                <input type="text" name="name" required>
+            </div>
+            <div>
+                <label for="relationship">Relationship:</label>
+                <input type="text" name="relationship" required placeholder="e.g., Son, Wife, Myself">
+            </div>
+            <div>
+                <label for="gender">Gender:</label>
+                <select name="gender" id="gender" required>
+                    <option value="" disabled selected>-- Select Gender --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+             <div>
+                <label for="age_group">Age Group:</label>
+                <select name="age_group" id="age_group" required>
+                    <option value="" disabled selected>-- Select Age Group --</option>
+                    <option value="Adult">Adult</option>
+                    <option value="Kid">Kid</option>
+                </select>
+            </div>
+            <button type="submit">Save Profile</button>
+        </form>
+    </div>
+    <div class="list-section">
+        <h2>Saved Profiles</h2>
+        {% if profiles %}
+            {% for profile in profiles %}
+                <div class="profile-list-item">
+                    <strong>{{ profile.name }}</strong> ({{ profile.relationship }})
+                    <br><small>{{ profile.gender }}, {{ profile.age_group }}</small>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>You have not added any profiles yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

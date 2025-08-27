@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Measurements</title>
+    <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1 { text-align: center; }
+        .service-title { color: #007bff; }
+        .measurement-list { list-style: none; padding: 0; margin-top: 20px; }
+        .measurement-item { 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            padding: 5px;
+        }
+        .measurement-item label { margin-left: 8px; font-size: 1.1em; }
+        .measurement-item img {
+            max-width: 40px;
+            vertical-align: middle;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; margin-top: 30px; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <h1>Manage Measurements</h1>
+    <p style="text-align: center;">
+        Set your required measurements for the service: 
+        <strong class="service-title">{{ tailor_service.service.name }}</strong>
+    </p>
+    <p style-="text-align: center; font-size: 0.9em; color: #666;">
+        We've pre-selected the standard measurements for you. You can customize them as needed.
+    </p>
+
+    <form method="POST" action="{{ url_for('tailor.manage_measurements', service_id=tailor_service.id) }}">
+        <ul class="measurement-list">
+            {% for measurement in all_measurements %}
+                <li class="measurement-item">
+                    <input type="checkbox" 
+                           id="m_{{ measurement.id }}" 
+                           name="measurement_ids" 
+                           value="{{ measurement.id }}"
+                           {% if measurement.id in ids_to_check %}checked{% endif %}>
+                    
+                    {% if measurement.image_url %}
+                        <img src="{{ measurement.image_url }}" alt="{{ measurement.name }} illustration">
+                    {% endif %}
+
+                    <label for="m_{{ measurement.id }}">{{ measurement.name }}</label>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <button type="submit">Save Measurement Settings</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('tailor.dashboard') }}">Back to Dashboard</a>
+    </p>
+    
+</body>
+</html>

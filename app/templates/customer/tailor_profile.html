@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ tailor.profile.first_name }}'s Profile</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
+        .profile-header { display: flex; align-items: center; gap: 20px; }
+        .profile-header img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+        .service-list { list-style: none; padding: 0; }
+        .service-item { border: 1px solid #eee; padding: 15px; margin-top: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .button { background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
+    
+    <div class="profile-header" style="margin-top: 20px;">
+        {% if tailor.profile.profile_picture_url %}
+            <img src="{{ tailor.profile.profile_picture_url }}" alt="{{ tailor.profile.first_name }}">
+        {% endif %}
+        <div>
+            <h1>{{ tailor.tailor_profile.business_name or (tailor.profile.first_name + ' ' + tailor.profile.last_name) }}</h1>
+            <p>{{ tailor.tailor_profile.bio or "Professional Tailoring Services" }}</p>
+        </div>
+    </div>
+
+    <h2 style="margin-top: 40px;">Services Offered</h2>
+    <ul class="service-list">
+        {% for offer in services_offered %}
+            <li class="service-item">
+                <div>
+                    <h3>{{ offer.service.name }}</h3>
+                    <p><strong>Price:</strong> ₹{{ "%.2f"|format(offer.price) }}</p>
+                </div>
+                <a href="{{ url_for('customer.order_options', tailor_service_id=offer.id) }}" class="button">Place Order</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

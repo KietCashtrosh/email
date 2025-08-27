@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Verify Handover{% endblock %}
+
+{% block content %}
+<style>
+    .otp-container { max-width: 500px; margin: 40px auto; text-align: center; padding: 30px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
+    .otp-input { width: 100%; padding: 15px; font-size: 2em; text-align: center; letter-spacing: 10px; border: 2px solid #ddd; border-radius: 8px; margin: 20px 0; box-sizing: border-box; }
+    .otp-button { width: 100%; padding: 15px; font-size: 1.2em; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; }
+</style>
+
+<div class="otp-container">
+    <a href="{{ url_for('delivery.task_details', task_id=task.id) }}">← Back to Task Details</a>
+    <h1>Confirm Handover</h1>
+    <p>Please ask the {{ 'customer' if 'customer' in task.task_type else 'tailor' }} for their 6-digit OTP and enter it below.</p>
+
+    <form method="POST">
+        <div>
+            <label for="otp">Enter 6-Digit OTP</label>
+            <input type="tel" class="otp-input" id="otp" name="otp" required pattern="\d{6}" maxlength="6" autocomplete="one-time-code">
+        </div>
+        <button type="submit" class="otp-button">Confirm Handover</button>
+    </form>
+</div>
+{% endblock %}

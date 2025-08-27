@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stichie Tailoring{% endblock %}</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            background-color: #f4f4f9;
+        }
+        .navbar {
+            background-color: #fff;
+            padding: 15px 30px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            text-decoration: none;
+            color: #333;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        .navbar a.logo { font-size: 1.5em; }
+        .content {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .flash { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div>
+            <a href="{{ url_for('customer.dashboard') }}" class="logo">Stichie</a>
+            <a href="{{ url_for('customer.dashboard') }}">Services</a>
+            <a href="#">Tailors</a>
+        </div>
+        <div>
+            <a href="{{ url_for('customer.order_history') }}">My Orders</a>
+            <a href="{{ url_for('customer.my_profiles') }}">My Family</a>
+            <a href="{{ url_for('customer.profile') }}">My Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>

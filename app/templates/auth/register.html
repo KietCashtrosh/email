@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        h1 { text-align: center; }
+        label { display: block; margin-top: 15px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
+        .flash { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <h1>Create Your Account</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        <div>
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" required>
+        </div>
+        <div>
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" required>
+        </div>
+        <div>
+            <label for="phone_number">Phone Number (for verification):</label>
+            <input type="tel" id="phone_number" name="phone_number" required>
+        </div>
+        <div>
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <div class="role-group"></div>
+            <label style="margin-bottom: 8px; display: block;">I am a:</label>
+            <div class="role-options">
+            <input type="radio" id="role_customer" name="role" value="customer" checked>
+            <label for="role_customer">Customer</label>
+            
+            <input type="radio" id="role_tailor" name="role" value="tailor">
+            <label for="role_tailor">Tailor</label>
+            
+            <input type="radio" id="role_partner" name="role" value="delivery_partner">
+            <label for="role_partner">Delivery Partner</label>
+            </div>
+        </div>
+        <style>
+            .role-group {
+            margin-top: 15px;
+            }
+            .role-options {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 5px;
+            }
+            .role-options input[type="radio"] {
+            margin-right: 5px;
+            accent-color: #007bff;
+            }
+            .role-options label {
+            margin-right: 10px;
+            font-weight: normal;
+            }
+        </style>
+        
+        <button type="submit">Register</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a>
+    </p>
+
+</body>
+</html>

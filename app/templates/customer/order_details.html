@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block content %}
+<style>
+    .order-container { max-width: 850px; margin: 2rem auto; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; color: #007bff; text-decoration: none; font-weight: bold; }
+    .order-header { text-align: center; margin-bottom: 2rem; }
+    .detail-section { background-color: #ffffff; border: 1px solid #e9ecef; padding: 25px; border-radius: 8px; margin-bottom: 1.5rem; }
+    .detail-section h3 { margin-top: 0; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+    .detail-item p { margin: 8px 0; }
+    .otp-section { border: 2px solid #28a745; }
+    .otp-code { text-align: center; font-size: 2.5em; letter-spacing: 8px; margin: 20px 0; font-weight: bold; color: #155724; }
+    .measurement-list { list-style: none; padding: 0; column-count: 2; }
+    .status-tracker { display: flex; justify-content: space-between; margin-bottom: 2.5rem; position: relative; padding-top: 20px; }
+    /* ... (rest of your status tracker CSS) ... */
+</style>
+
+<div class="order-container">
+    <a href="{{ url_for('customer.order_history') }}" class="back-link">&larr; Back to Order History</a>
+    <h1 class="order-header">Order Details #{{ order.id }}</h1>
+
+    {% set statuses = ['pending_tailor_acceptance', 'awaiting_pickup', 'in_progress', 'ready_for_delivery', 'completed'] %}
+    {% set current_status_index = statuses.index(order.order_status) if order.order_status in statuses else -1 %}
+    {% set progress_percent = (current_status_index / (statuses|length - 1)) * 100 if current_status_index != -1 else 0 %}
+    <div class="status-tracker">
+        </div>
+
+    {% if order.order_status == 'awaiting_pickup' and pickup_otp %}
+    <div class="detail-section otp-section">
+        <h3>Your Pickup OTP</h3>
+        <p>Please provide this OTP to the delivery partner when they arrive.</p>
+        <div class="otp-code">{{ pickup_otp }}</div>
+    </div>
+    {% endif %}
+
+    {% if order.order_status in ['ready_for_delivery', 'out_for_delivery'] and delivery_otp %}
+    <div class="detail-section otp-section">
+        <h3>Your Delivery OTP</h3>
+        <p>Your order is on its way! Provide this OTP to the partner to confirm delivery.</p>
+        <div class="otp-code">{{ delivery_otp }}</div>
+    </div>
+    {% endif %}
+
+    <div class="detail-section">
+        <h3>Order & Personnel</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p><strong>Date Placed:</strong><br>{{ order.created_at.strftime('%d-%b-%Y, %I:%M %p') }}</p>
+            </div>
+            <div class="detail-item">
+                <p><strong>Service / Design:</strong><br>{{ order.items[0].tailor_service.service.name if order.items else 'N/A' }}</p>
+            </div>
+            <div class="detail-item">
+                <p><strong>Tailor Assigned:</strong><br>
+                {% if order.tailor %}
+                    {{ order.tailor.profile.first_name }} {{ order.tailor.profile.last_name }}
+                {% else %}
+                    Pending Assignment
+                {% endif %}
+                </p>
+            </div>
+            <div class="detail-item">
+                <p><strong>Delivery Partner:</strong><br>
+                {% if delivery_partner %}
+                    {{ delivery_partner.profile.first_name }} {{ delivery_partner.profile.last_name }}
+                {% else %}
+                    Not yet assigned
+                {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Logistics & Payment</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <p><strong>Pickup/Delivery Address:</strong><br>
+                {% if order.delivery_address %}
+                   {{ order.delivery_address.address_line1 }}<br>
+                   {{ order.delivery_address.city }}, {{ order.delivery_address.state }}
+                {% endif %}
+                </p>
+            </div>
+            <div class="detail-item">
+                <p><strong>Payment Method:</strong><br>{{ order.payment_method.replace('_', ' ')|title if order.payment_method else 'Not Specified' }}</p>
+                <p><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-section">
+    <h3>Measurements Provided</h3>
+
+    {% if order.items and order.items[0].measurements %}
+        <ul class="measurement-list">
+            {% for measurement in order.items[0].measurements %}
+                <li><span>{{ measurement.measurement_field.name }}:</span> {{ measurement.value }} inches</li>
+            {% endfor %}
+        </ul>
+    {% if order.order_status == 'completed' %}
+            <a href="{{ url_for('customer.save_measurements', item_id=order.items[0].id) }}" class="save-link">
+                Save these Measurements for Future Use
+            </a>
+    {% endif %}
+    {% elif order.measurement_method == 'home_visit' %}
+        <p>A home visit was requested. The measurements will be updated here as soon as our partner submits them.</p>
+    {% else %}
+        <p>No measurements have been recorded for this order yet.</p>
+    {% endif %}
+</div>
+
+</div>
+{% endblock %}
