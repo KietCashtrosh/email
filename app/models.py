@@ -280,6 +280,12 @@ class AvailabilityStatus(enum.Enum):
     OFFLINE = 'offline'
     BUSY = 'busy'
 
+class ServiceCategory(enum.Enum):
+    WOMENSWEAR = "Womenswear"
+    MENSWEAR = "Menswear"
+    KIDSWEAR = "Kidswear"
+    UNISEX = "Unisex"
+    ALTERATIONS = "Alterations"
 # --- User & Profile Models ---
 
 class User(UserMixin, db.Model):
@@ -339,22 +345,39 @@ class MeasurementField(db.Model):
     is_optional = db.Column(db.Boolean, default=False)
     image_url = db.Column(db.String(255), nullable=True) # URL to an illustrative image
 
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False) # e.g., "Womenswear"
+
+    def __repr__(self):
+        return self.name
+
+
+# --- NEW: The linking table for the many-to-many relationship ---
+# --- CORRECT: The linking table is defined here, in the main scope ---
+service_categories = db.Table('service_categories',
+    db.Column('service_id', db.Integer, db.ForeignKey('services.id'), primary_key=True),
+    db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True)
+)
+    
 class Service(db.Model):
     __tablename__ = 'services'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(50), nullable=True)
     image_url = db.Column(db.String(255), nullable=True)
-    category = db.Column(db.String(50))
     standard_measurements = db.relationship('MeasurementField', secondary='standard_service_measurements')
+    categories = db.relationship('Category', secondary=service_categories,
+                                 lazy='subquery', backref=db.backref('services', lazy=True))
 
 # --- Linking Tables (Many-to-Many) ---
-
 standard_service_measurements = db.Table('standard_service_measurements',
     db.Column('service_id', db.Integer, db.ForeignKey('services.id'), primary_key=True),
-    db.Column('measurement_field_id', db.Integer, db.ForeignKey('measurement_fields.id'), primary_key=True)
-)
+    db.Column('measurement_field_id', db.Integer, db.ForeignKey('measurement_fields.id'), primary_key=True))
+    
+    
+
 
 class TailorService(db.Model):
     __tablename__ = 'tailor_services'

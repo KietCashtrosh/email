@@ -1,11 +1,53 @@
+
+
 {% extends "base.html" %}
+{% block title %}Manage Measurements{% endblock %}
 
 {% block content %}
-<h1>Manage Variations for {{ service.name }}</h1>
-<form method="POST">
-    {% for field in all_measurements %}
-    <label><input type="checkbox" name="measurement_ids" value="{{ field.id }}" {% if field.id in current_ids %}checked{% endif %}> {{ field.name }}</label><br>
-    {% endfor %}
-    <button type="submit">Save</button>
-</form>
+<style>
+    .container { max-width: 900px; margin: auto; }
+    .grid-container { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+    .form-section, .list-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+    table { width: 100%; }
+</style>
+
+<a href="{{ url_for('admin.dashboard') }}">&larr; Back to Admin Dashboard</a>
+<h1>Manage Measurement Fields</h1>
+<p>This is the master list of all possible measurements that can be requested for any service.</p>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+    <div class="grid-container">
+        <div class="form-section">
+            <h3>Add New Field</h3>
+            <form method="POST" action="{{ url_for('admin.manage_measurements') }}">
+                <label>Name:</label><input type="text" name="name" required><br>
+                <label>Description:</label><textarea name="description"></textarea><br>
+                <label>Image URL:</label><input type="url" name="image_url"><br>
+                <button type="submit">Create Field</button>
+            </form>
+    </div>
+    <div>
+        <div class="list-section">
+            <h3>Existing Fields</h3>
+                <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in measurements %}
+                <tr>
+                    <td>{{ field.id }}</td>
+                    <td>{{ field.name }}</td>
+                    <td>{{ field.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </div>
+        </table>
+    </div>
+</div>
 {% endblock %}

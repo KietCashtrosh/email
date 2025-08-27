@@ -1,11 +1,103 @@
 {% extends "base.html" %}
+{% block title %}All Orders{% endblock %}
 
 {% block content %}
-<h1>All Orders</h1>
-<table>
-    <tr><th>ID</th><th>Customer</th><th>Tailor</th><th>Status</th><th>Created</th></tr>
-    {% for order in orders %}
-    <tr><td>{{ order.id }}</td><td>{{ order.customer.profile.first_name }}</td><td>{{ order.tailor.profile.first_name }}</td><td>{{ order.order_status }}</td><td>{{ order.created_at }}</td></tr>
-    {% endfor %}
-</table>
+<style>
+    .admin-container { 
+        max-width: 1200px; 
+        margin: auto; 
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .page-header {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .page-header h1 { margin: 0; }
+    .filter-nav {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .filter-nav a {
+        text-decoration: none;
+        color: #007bff;
+        margin: 0 10px;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    .filter-nav a.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .order-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+    .order-table th, .order-table td { 
+        border-bottom: 1px solid #ddd; 
+        padding: 12px; 
+        text-align: left; 
+    }
+    .order-table th { 
+        background-color: #f8f9fa; 
+    }
+    .order-table tr:hover { background-color: #f1f1f1; }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 0.8em;
+        font-weight: bold;
+        border-radius: 12px;
+        color: white;
+    }
+    .status-pending_tailor_acceptance { background-color: #ffc107; color: #333; }
+    .status-awaiting_pickup { background-color: #17a2b8; }
+    .status-in_progress { background-color: #007bff; }
+    .status-completed { background-color: #28a745; }
+    .status-ready_for_delivery { background-color: #fd7e14; }
+</style>
+
+<div class="admin-container">
+    <a href="{{ url_for('admin.dashboard') }}">&larr; Back to Admin Dashboard</a>
+    <div class="page-header">
+        <h1>All Orders</h1>
+    </div>
+
+    <div class="filter-nav">
+        <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if not request.args.get('status') else '' }}">All</a>
+        <a href="{{ url_for('admin.orders', status='pending_tailor_acceptance') }}" class="{{ 'active' if request.args.get('status') == 'pending_tailor_acceptance' else '' }}">Pending</a>
+        <a href="{{ url_for('admin.orders', status='in_progress') }}" class="{{ 'active' if request.args.get('status') == 'in_progress' else '' }}">In Progress</a>
+        <a href="{{ url_for('admin.orders', status='completed') }}" class="{{ 'active' if request.args.get('status') == 'completed' else '' }}">Completed</a>
+    </div>
+
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Tailor</th>
+                <th>Status</th>
+                <th>Date Placed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td><a href="{{ url_for('admin.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+                <td>{{ order.customer.profile.first_name or 'N/A' }}</td>
+                <td>{{ order.tailor.profile.first_name if order.tailor else 'N/A' }}</td>
+                <td><span class="status-badge status-{{ order.order_status }}">{{ order.order_status.replace('_', ' ')|title }}</span></td>
+                <td>{{ order.created_at.strftime('%d-%b-%Y') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center;">No orders found for this status.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

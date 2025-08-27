@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Live Order Monitoring{% endblock %}
+
+{% block content %}
+<style>
+    .admin-container { max-width: 1200px; margin: auto; }
+    .page-header { border-bottom: 1px solid #ddd; padding-bottom: 15px; margin-bottom: 20px; }
+    .order-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    .order-table th, .order-table td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
+    .order-table th { background-color: #f8f9fa; }
+    .status-badge { display: inline-block; padding: 4px 10px; font-size: 0.8em; font-weight: bold; border-radius: 12px; color: white; }
+    .status-pending_tailor_acceptance { background-color: #ffc107; color: #333; }
+    .status-awaiting_pickup { background-color: #17a2b8; }
+    .status-in_progress { background-color: #007bff; }
+    .status-ready_for_delivery { background-color: #fd7e14; }
+    .status-out_for_delivery { background-color: #6f42c1; }
+</style>
+
+<div class="admin-container">
+    <a href="{{ url_for('admin.dashboard') }}">&larr; Back to Admin Dashboard</a>
+    <div class="page-header">
+        <h1>Live Order Monitoring</h1>
+        <p>A real-time overview of all active orders on the platform.</p>
+    </div>
+
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Tailor</th>
+                <th>Delivery Partner</th>
+                <th>Current Status</th>
+                <th>Date Placed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td><a href="{{ url_for('admin.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+                <td>{{ order.customer.profile.first_name }}</td>
+                <td>{{ order.tailor.profile.first_name if order.tailor else 'N/A' }}</td>
+                <td>
+                    {# Find the first assigned partner #}
+                    {% set partner_name = 'N/A' %}
+                    {% for task in order.logistics_tasks %}
+                        {% if task.delivery_partner %}
+                            {% set partner_name = task.delivery_partner.profile.first_name %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ partner_name }}
+                </td>
+                <td><span class="status-badge status-{{ order.order_status }}">{{ order.order_status.replace('_', ' ')|title }}</span></td>
+                <td>{{ order.created_at.strftime('%d-%b-%Y %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center;">No active orders at the moment.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

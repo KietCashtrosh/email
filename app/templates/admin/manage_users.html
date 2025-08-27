@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<style>
+    .user-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    .user-table th, .user-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    .user-table th { background-color: #f8f9fa; }
+    .user-table tr:hover { background-color: #f1f1f1; }
+    .role-badge { padding: 3px 8px; border-radius: 12px; color: white; font-size: 0.8em; }
+    .role-customer { background-color: #007bff; }
+    .role-tailor { background-color: #28a745; }
+    .role-delivery_partner { background-color: #ffc107; color: #333; }
+    .role-admin { background-color: #dc3545; }
+</style>
+
+<h1>User Management</h1>
+<p>View and manage all users registered on the platform.</p>
+
+<table class="user-table">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Role</th>
+            <th>Registered On</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users.items %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.profile.first_name }} {{ user.profile.last_name }}</td>
+                <td>{{ user.email or user.phone_number }}</td>
+                <td><span class="role-badge role-{{ user.role }}">{{ user.role.replace('_', ' ')|title }}</span></td>
+                <td>{{ user.created_at.strftime('%d-%b-%Y') }}</td>
+                <td><a href="{{ url_for('admin.user_details', user_id=user.id) }}">View Details</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

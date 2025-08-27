@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Admin View: Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<style>
+    .admin-container { max-width: 900px; margin: auto; }
+    .detail-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+</style>
+
+<div class="admin-container">
+    <a href="{{ url_for('admin.orders') }}">&larr; Back to All Orders</a>
+    <h1>Admin View: Order #{{ order.id }}</h1>
+
+    <div class="detail-section">
+        <h3>Status & Lifecycle</h3>
+        <p><strong>Order Status:</strong> {{ order.order_status.replace('_', ' ')|title }}</p>
+        <p><strong>Payment Status:</strong> {{ order.payment_status.replace('_', ' ')|title }}</p>
+        <p><strong>Measurement Method:</strong> {{ order.measurement_method.replace('_', ' ')|title }}</p>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-section">
+            <h3>Customer Details</h3>
+            <p><strong>Name:</strong> {{ order.customer.profile.first_name }} {{ order.customer.profile.last_name }}</p>
+            <p><strong>Contact:</strong> {{ order.customer.email or order.customer.phone_number }}</p>
+        </div>
+        <div class="detail-section">
+            <h3>Tailor Details</h3>
+            {% if order.tailor %}
+                <p><strong>Name:</strong> {{ order.tailor.profile.first_name }} {{ order.tailor.profile.last_name }}</p>
+                <p><strong>Business:</strong> {{ order.tailor.tailor_profile.business_name }}</p>
+            {% else %}
+                <p>Not yet assigned.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>Logistics History</h3>
+        <ul>
+            {% for task in order.logistics_tasks %}
+                <li>
+                    <strong>{{ task.task_type.replace('_', ' ')|title }}</strong> - Status: {{ task.status }}
+                    {% if task.delivery_partner %}
+                        (Partner: {{ task.delivery_partner.profile.first_name }})
+                    {% endif %}
+                </li>
+            {% else %}
+                <li>No logistic tasks created yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

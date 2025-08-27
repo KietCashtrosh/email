@@ -1,10 +1,21 @@
 {% extends "base.html" %}
-
+{% block title %}Add New Service{% endblock %}
 {% block content %}
-<h1>Add Service</h1>
-<form method="POST">
-    <label>Name: <input type="text" name="name" required></label><br>
-    <label>Category: <input type="text" name="category"></label><br>
-    <button type="submit">Add</button>
-</form>
+    <h1>Add New Master Service</h1>
+    <form method="POST">
+        <div>
+            <label for="name">Service Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        <div>
+            <label>Categories:</label>
+            {% for category in categories %}
+                <div>
+                    <input type="checkbox" name="category_ids" value="{{ category.id }}" id="cat_{{ category.id }}">
+                    <label for="cat_{{ category.id }}">{{ category.name }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit">Create Service</button>
+    </form>
 {% endblock %}

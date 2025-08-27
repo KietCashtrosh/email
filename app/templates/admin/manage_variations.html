@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Manage Variations for {{ service.name }}{% endblock %}
+{% block content %}
+<style>
+    .container { max-width: 800px; margin: auto; }
+    .form-section, .list-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-top: 20px;}
+</style>
+<div class="container">
+    <a href="{{ url_for('admin.services') }}">&larr; Back to Services</a>
+    <h1>Manage Variations for <em>{{ service.name }}</em></h1>
+
+    <div class="form-section">
+        <h3>Add New Variation</h3>
+        <form method="POST">
+            <label for="name">Variation Name:</label>
+            <input type="text" name="name" required placeholder="e.g., Slim Fit, Princess Cut">
+            <button type="submit">Add Variation</button>
+        </form>
+    </div>
+
+    <div class="list-section">
+        <h3>Existing Variations</h3>
+        <ul>
+            {% for variation in service.variations %}
+                <li>{{ variation.name }}</li>
+            {% else %}
+                <li>No variations added yet for this service.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Manage Categories{% endblock %}
+
+{% block content %}
+<style>
+    .container { max-width: 900px; margin: auto; }
+    .grid-container { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+    .form-section, .list-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+    .category-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+    .delete-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+</style>
+
+<div class="container">
+    <a href="{{ url_for('admin.dashboard') }}">&larr; Back to Admin Dashboard</a>
+    <h1>Manage Service Categories</h1>
+    <p>This is the master list of categories used for filtering services for customers.</p>
+    
+    <div class="grid-container">
+        <div class="form-section">
+            <h3>Add New Category</h3>
+            <form method="POST">
+                <div>
+                    <label for="name">Category Name:</label>
+                    <input type="text" name="name" required placeholder="e.g., Womenswear">
+                </div>
+                <button type="submit" style="width:100%; margin-top:15px; padding:10px;">Create Category</button>
+            </form>
+        </div>
+        <div class="list-section">
+            <h3>Existing Categories</h3>
+            {% for category in categories %}
+                <div class="category-item">
+                    <span>{{ category.name }}</span>
+                    <form method="POST" action="{{ url_for('admin.delete_category', category_id=category.id) }}" onsubmit="return confirm('Are you sure? Deleting this could affect existing services.');">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </div>
+            {% else %}
+                <p>No categories have been created yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

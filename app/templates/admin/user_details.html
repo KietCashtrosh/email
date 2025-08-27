@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}User Details{% endblock %}
+
+{% block content %}
+<style>
+    .detail-container { max-width: 900px; margin: auto; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+    .profile-card { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+    .detail-card { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+    .detail-card h3 { margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+    .warning-box { background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 5px; margin-top: 15px; }
+    .password-hash { word-wrap: break-word; font-family: monospace; font-size: 0.9em; }
+</style>
+
+<div class="detail-container">
+    <a href="{{ url_for('admin.manage_users') }}">&larr; Back to All Users</a>
+    <h1 style="text-align: center;">User Details</h1>
+
+    <div class="detail-grid">
+        <div class="profile-card">
+            <h3>{{ user.profile.first_name }} {{ user.profile.last_name }}</h3>
+            <p><strong>Role:</strong> {{ user.role.replace('_', ' ')|title }}</p>
+            <p><strong>Email:</strong> {{ user.email or 'Not provided' }}</p>
+            <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+            <p><strong>Verified:</strong> {{ 'Yes' if user.is_verified else 'No' }}</p>
+            <hr>
+            <h4>Security Info</h4>
+            <div class="warning-box">
+                <strong>Warning:</strong> The following is a secure password hash, not the user's actual password. This is for system reference only.
+            </div>
+            <p class="password-hash">{{ user.password_hash }}</p>
+        </div>
+
+        <div class="detail-card">
+            
+            {% if user.role == 'tailor' and user.tailor_profile %}
+                <h3>Tailor Profile</h3>
+                <p><strong>Business Name:</strong> {{ user.tailor_profile.business_name or 'N/A' }}</p>
+                <p><strong>Bio:</strong> {{ user.tailor_profile.bio or 'N/A' }}</p>
+                <p><strong>Experience:</strong> {{ user.tailor_profile.years_of_experience }} years</p>
+                <p><strong>Specializations:</strong> {{ user.tailor_profile.specializations or 'N/A' }}</p>
+                <p><strong>Admin Verified:</strong> {{ 'Yes' if user.tailor_profile.is_verified else 'No' }}</p>
+
+            {% elif user.role == 'delivery_partner' and user.delivery_partner_profile %}
+                <h3>Delivery Partner Profile</h3>
+                <p><strong>Vehicle:</strong> {{ user.delivery_partner_profile.vehicle_details or 'N/A' }}</p>
+                <p><strong>Status:</strong> {{ user.delivery_partner_profile.availability_status.value }}</p>
+                <p><strong>Admin Approved:</strong> {{ 'Yes' if user.delivery_partner_profile.is_approved else 'No' }}</p>
+            
+            {% else %}
+                <h3>Customer Profile</h3>
+                <p>This is a standard customer account.</p>
+            {% endif %}
+
+            <hr>
+            <h3>Addresses</h3>
+            {% for address in user.addresses %}
+                <p>{{ address.address_line1 }}, {{ address.city }}, {{ address.state }} - {{ address.postal_code }} {% if address.is_default %}(Default){% endif %}</p>
+            {% else %}
+                <p>No addresses on file.</p>
+            {% endfor %}
+
+            <hr>
+            <h3>Recent Order Activity</h3>
+            {% for order in recent_orders %}
+                <p>Order #{{ order.id }} - Status: {{ order.order_status }}</p>
+            {% else %}
+                <p>No recent orders found.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

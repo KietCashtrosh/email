@@ -1,10 +1,33 @@
 {% extends "base.html" %}
+{% block title %}Edit Service{% endblock %}
 
 {% block content %}
-<h1>Edit Service</h1>
-<form method="POST">
-    <label>Name: <input type="text" name="name" value="{{ service.name }}" required></label><br>
-    <label>Category: <input type="text" name="category" value="{{ service.category }}"></label><br>
-    <button type="submit">Update</button>
-</form>
+<style>
+    .form-container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, select { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; }
+    button { width: 100%; padding: 12px; margin-top: 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+</style>
+
+<div class="form-container">
+    <h1>Edit Service: {{ service.name }}</h1>
+    <form method="POST">
+        <div>
+            <label>Service Name:</label>
+            <input type="text" name="name" value="{{ service.name }}" required>
+        </div>
+         <div>
+            <label>Categories:</label>
+            {% for category in categories %}
+                <div>
+                    <input type="checkbox" name="category_ids" value="{{ category.id }}" id="cat_{{ category.id }}"
+                           {% if category.id in current_category_ids %}checked{% endif %}>
+                    <label for="cat_{{ category.id }}">{{ category.name }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit">Update Service</button>
+    </form>
+    <a href="{{ url_for('admin.services') }}" style="display: block; text-align: center; margin-top: 15px;">Cancel</a>
+</div>
 {% endblock %}
