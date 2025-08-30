@@ -1,37 +1,39 @@
-{# This tailor base template itself extends the main base template #}
 {% extends "base.html" %}
 
 {% block content %}
 <style>
-    .tailor-nav {
+    .portal-nav {
         background-color: #f8f9fa;
         padding: 10px 0;
         border-bottom: 1px solid #ddd;
         margin-bottom: 30px;
         text-align: center;
     }
-    .tailor-nav a {
+    .portal-nav a {
         text-decoration: none;
         color: #007bff;
         margin: 0 20px;
         font-weight: bold;
         font-size: 1.1em;
     }
-    .tailor-container {
-        max-width: 900px;
+    .portal-container {
+        max-width: 1100px;
         margin: 0 auto;
     }
 </style>
 
-<div class="tailor-container">
-    <div class="tailor-nav">
+<div class="portal-container">
+    <nav class="portal-nav">
         <a href="{{ url_for('tailor.dashboard') }}">Dashboard</a>
         <a href="{{ url_for('tailor.earnings') }}">Earnings</a>
-        {# You can link to the general profile page or a tailor-specific one #}
-        <a href="{{ url_for('customer.profile') }}">My Profile</a> 
-    </div>
+        <a href="{{ url_for('tailor.profile') }}">My Profile</a>
+        <a href="{{ url_for('tailor.my_services') }}">My Services</a>
+        <a href="{{ url_for('tailor.add_service') }}">Add Service</a>
+        <a href="{{ url_for('tailor.orders') }}">My Orders</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
 
-    {# This is where the content of the child pages (like the dashboard) will go #}
+    {# This is where the content of other tailor pages will go #}
     {% block tailor_content %}{% endblock %}
 </div>
 {% endblock %}

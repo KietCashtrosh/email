@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "delivery/base.html" %}
 {% block title %}Verify Handover{% endblock %}
 
-{% block content %}
+{% block delivery_content %}
 <style>
     .otp-container { max-width: 500px; margin: 40px auto; text-align: center; padding: 30px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
     .otp-input { width: 100%; padding: 15px; font-size: 2em; text-align: center; letter-spacing: 10px; border: 2px solid #ddd; border-radius: 8px; margin: 20px 0; box-sizing: border-box; }
@@ -9,9 +9,17 @@
 </style>
 
 <div class="otp-container">
+    
     <a href="{{ url_for('delivery.task_details', task_id=task.id) }}">← Back to Task Details</a>
     <h1>Confirm Handover</h1>
-    <p>Please ask the {{ 'customer' if 'customer' in task.task_type else 'tailor' }} for their 6-digit OTP and enter it below.</p>
+    {# This logic provides a clear message for each situation #}
+    {% if task.status == 'in_transit_to_tailor' %}
+        <p>Please ask the <strong>tailor</strong> for their 6-digit Handover OTP.</p>
+    {% elif task.task_type == 'pickup_from_tailor' %}
+        <p>Please ask the <strong>tailor</strong> for their 6-digit Pickup OTP.</p>
+    {% else %}
+        <p>Please ask the <strong>customer</strong> for their 6-digit OTP.</p>
+    {% endif %}
 
     <form method="POST">
         <div>

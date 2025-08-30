@@ -1,0 +1,99 @@
+{% extends "tailor/base.html" %}
+{% block title %}My Orders{% endblock %}
+
+{% block tailor_content %}
+<style>
+    .page-header h1 { margin-top: 0; }
+    .order-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        background: #fff;
+        margin-top: 20px;
+    }
+    .order-table th, .order-table td { 
+        border-bottom: 1px solid #ddd; 
+        padding: 12px; 
+        text-align: left; 
+    }
+    .order-table th { background-color: #f8f9fa; }
+    .action-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
+
+<div class="page-header">
+    <h1>My Orders</h1>
+</div>
+
+<h2>New Orders (Awaiting Acceptance)</h2>
+<table class="order-table">
+    <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Date Placed</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for order in new_orders %}
+        <tr>
+            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+            <td>{{ order.customer.profile.first_name }}</td>
+            <td>{{ order.items[0].tailor_service.service.name }}</td>
+            <td>{{ order.created_at.strftime('%d-%b-%Y') }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('tailor.accept_order', order_id=order.id) }}">
+                    <button type="submit" class="action-btn">Accept</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align: center;">No new orders.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 style="margin-top: 40px;">Active Orders</h2>
+<table class="order-table">
+    <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for order in active_orders %}
+        <tr>
+            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+            <td>{{ order.customer.profile.first_name }}</td>
+            <td>{{ order.items[0].tailor_service.service.name }}</td>
+            <td>{{ order.order_status.replace('_', ' ')|title }}</td>
+            <td>
+                {% if order.order_status == 'in_progress' %}
+                    <form method="POST" action="{{ url_for('tailor.complete_order', order_id=order.id) }}">
+                        <button type="submit" class="action-btn" style="background-color: #007bff;">Mark as Finished</button>
+                    </form>
+                {% else %}
+                    <small>Awaiting Fabric</small>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align: center;">No active orders.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 style="margin-top: 40px;">Completed Orders</h2>
+<table class="order-table">
+     <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th></tr></thead>
+    <tbody>
+        {% for order in completed_orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.customer.profile.first_name }}</td>
+            <td>{{ order.items[0].tailor_service.service.name }}</td>
+            <td>{{ order.order_status.replace('_', ' ')|title }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align: center;">No completed orders.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

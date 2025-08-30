@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "delivery/base.html" %}
 {% block title %}Delivery Dashboard{% endblock %}
-{% block content %}
+{% block delivery_content %}
 <style>
     /* Add some simple tab-like styling */
 </style>
@@ -38,4 +38,25 @@
         <li>No completed tasks yet.</li>
     {% endfor %}
 </ul>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script type="text/javascript" charset="utf-8">
+    // 2. Connect to the Socket.IO server
+    var socket = io();
+
+    socket.on('connect', function() {
+        console.log('WebSocket connected!');
+    });
+
+    // 3. Listen for the 'new_task' event
+    socket.on('new_task', function(data) {
+        // 4. When a new task arrives, show an alert and reload the page
+        console.log('New task received:', data.message);
+        alert('A new delivery task is available!');
+        // Reload the page to show the new task in the "Available" list
+        location.reload(); 
+    });
+</script>
 {% endblock %}

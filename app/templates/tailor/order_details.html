@@ -1,0 +1,65 @@
+{% extends "tailor/base.html" %}
+{% block title %}Order #{{ order.id }} - Job Ticket{% endblock %}
+
+{% block tailor_content %}
+<style>
+    .job-ticket-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+    .main-details, .actions-notes { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+    .section-title { margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+    .measurement-list { list-style: none; padding: 0; column-count: 2; }
+    .note-feed { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
+    .note-item { background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+</style>
+
+<a href="{{ url_for('tailor.orders') }}">&larr; Back to All Orders</a>
+<h1>Job Ticket: Order #{{ order.id }}</h1>
+
+<div class="job-ticket-grid">
+    <div class="main-details">
+        <h3 class="section-title">Stitching Specifications</h3>
+        <p><strong>Service:</strong> {{ order.items[0].tailor_service.service.name }}</p>
+        <h3 class="section-title" style="margin-top: 30px;">Customer Measurements</h3>
+        {% if order.items and order.items[0].measurements %}
+            <ul class="measurement-list">
+                {% for m in order.items[0].measurements %}
+                    <li><strong>{{ m.measurement_field.name }}:</strong> {{ m.value }} inches</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Measurements are pending (Home Visit).</p>
+        {% endif %}
+    </div>
+
+    <div class="actions-notes">
+        <h3 class="section-title">Actions</h3>
+        {% if order.order_status == 'pending_tailor_acceptance' %}
+            <form method="POST" action="{{ url_for('tailor.accept_order', order_id=order.id) }}">
+                <button type="submit">Accept This Order</button>
+            </form>
+        {% elif order.order_status == 'in_progress' %}
+             <form method="POST" action="{{ url_for('tailor.complete_order', order_id=order.id) }}">
+                <button type="submit">Mark as Stitched & Finished</button>
+            </form>
+        {% else %}
+            <p>Current Status: <strong>{{ order.order_status.replace('_', ' ')|title }}</strong></p>
+        {% endif %}
+
+        <h3 class="section-title" style="margin-top: 30px;">Order Notes</h3>
+        <div class="note-feed">
+            {% for note in order.notes|sort(attribute='created_at') %}
+                <div class="note-item">
+                    <strong>{{ note.author.profile.first_name }} ({{ note.author.role.replace('_', ' ')|title }}):</strong>
+                    <p>{{ note.note }}</p>
+                    <small>{{ note.created_at.strftime('%d-%b %I:%M %p') }}</small>
+                </div>
+            {% else %}
+                <p>No notes yet.</p>
+            {% endfor %}
+        </div>
+        <form method="POST" style="margin-top: 15px;">
+            <textarea name="note" rows="3" style="width: 100%;" placeholder="Add a note for the customer or delivery partner..."></textarea>
+            <button type="submit" style="width: 100%; margin-top: 5px;">Add Note</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "tailor/base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block tailor_content %}
+<style>
+    .profile-form-container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; }
+    .form-section { margin-bottom: 30px; }
+    .form-section h3 { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+    label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+    input[type="text"], input[type="email"], input[type="number"], textarea {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    textarea { resize: vertical; }
+    .readonly-field { background-color: #f0f0f0; }
+    .button-save { width: 100%; padding: 12px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
+</style>
+
+<div class="profile-form-container">
+    <h1>My Tailor Profile</h1>
+    <form method="POST">
+        <div class="form-section">
+            <h3>Personal Details</h3>
+            <label>First Name:</label>
+            <input type="text" name="first_name" value="{{ user_profile.first_name or '' }}">
+            
+            <label>Last Name:</label>
+            <input type="text" name="last_name" value="{{ user_profile.last_name or '' }}">
+            
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ current_user.email or '' }}">
+            
+            <label>Phone Number (Cannot be changed):</label>
+            <input type="text" value="{{ current_user.phone_number }}" class="readonly-field" readonly>
+        </div>
+
+        <div class="form-section">
+            <h3>Business Details</h3>
+            <label>Business Name:</label>
+            <input type="text" name="business_name" value="{{ tailor_profile.business_name or '' }}">
+            
+            <label>About Your Business (Bio):</label>
+            <textarea name="bio" rows="4">{{ tailor_profile.bio or '' }}</textarea>
+            
+            <label>Years of Experience:</label>
+            <input type="number" name="years_of_experience" value="{{ tailor_profile.years_of_experience or '' }}">
+            
+            <label>Specializations:</label>
+            <input type="text" name="specializations" value="{{ tailor_profile.specializations or '' }}" placeholder="e.g., Womenswear, Blouses, Suits">
+        </div>
+
+        <div class="form-section">
+            <h3>Business Address</h3>
+            <label>Address Line 1:</label>
+            <input type="text" name="address_line1" value="{{ address.address_line1 or '' }}">
+            
+            <label>City:</label>
+            <input type="text" name="city" value="{{ address.city or '' }}">
+            
+            <label>State:</label>
+            <input type="text" name="state" value="{{ address.state or '' }}">
+            
+            <label>Postal Code:</label>
+            <input type="text" name="postal_code" value="{{ address.postal_code or '' }}">
+        </div>
+
+        <button type="submit" class="button-save">Save All Changes</button>
+    </form>
+</div>
+{% endblock %}

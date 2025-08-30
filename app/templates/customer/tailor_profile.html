@@ -13,6 +13,8 @@
     </style>
 </head>
 <body>
+    {% extends "customer/base.html" %}
+    {% block customer_content %}
     <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
     
     <div class="profile-header" style="margin-top: 20px;">
@@ -37,6 +39,6 @@
             </li>
         {% endfor %}
     </ul>
-
+    {% endblock %}
 </body>
 </html>

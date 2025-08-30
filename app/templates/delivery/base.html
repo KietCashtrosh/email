@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .portal-nav {
+        background-color: #ffc107; /* A distinct color for the delivery portal */
+        padding: 10px 0;
+        border-bottom: 1px solid #e0a800;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .portal-nav a {
+        text-decoration: none;
+        color: #333; /* Dark text for better contrast on yellow */
+        margin: 0 20px;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .portal-container {
+        max-width: auto;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="portal-container">
+    <nav class="portal-nav">
+        <a href="{{ url_for('delivery.dashboard') }}">Dashboard</a>
+        {# The earnings link can be built out later #}
+        <a href="#">Earnings</a> 
+        <a href="{{ url_for('customer.profile') }}">My Profile</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+
+    {# This is where the content of the delivery partner pages will go #}
+    {% block delivery_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "tailor/base.html" %}
+{% block title %}Edit Service{% endblock %}
+
+{% block tailor_content %}
+<style>
+    .form-container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; }
+    button { width: 100%; padding: 12px; margin-top: 20px; background-color: #007bff; color: white; border: none; font-size: 16px; cursor: pointer; }
+</style>
+
+<div class="form-container">
+    <h1>Edit Service: {{ tailor_service.service.name }}</h1>
+    <form method="POST">
+        <div>
+            <label for="price">Your Price (₹):</label>
+            <input type="number" name="price" step="0.01" value="{{ tailor_service.price }}" required>
+        </div>
+        <div>
+            <label for="estimated_days">Estimated Delivery Time (in days):</label>
+            <input type="number" name="estimated_days" value="{{ tailor_service.estimated_days }}" required>
+        </div>
+        <button type="submit">Update Service</button>
+    </form>
+</div>
+{% endblock %}

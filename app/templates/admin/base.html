@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .portal-nav {
+        background-color: #343a40; /* Darker nav for admin */
+        padding: 10px 0;
+        border-bottom: 1px solid #222;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .portal-nav a {
+        text-decoration: none;
+        color: #fff; /* White links */
+        margin: 0 15px;
+        font-weight: bold;
+    }
+    .portal-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="portal-container">
+    <nav class="portal-nav">
+        <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('admin.monitor_orders') }}">Monitor Orders</a>
+        <a href="{{ url_for('admin.manage_users') }}">Manage Users</a>
+        <a href="{{ url_for('admin.services') }}">Manage Services</a>
+        <a href="{{ url_for('admin.manage_categories') }}">Manage Categories</a>
+        <a href="{{ url_for('admin.manage_measurements') }}">Manage Measurements</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+
+    {# This is where the content of the admin pages will go #}
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}

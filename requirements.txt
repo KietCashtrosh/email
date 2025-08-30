@@ -4,3 +4,5 @@ Flask-Migrate
 python-dotenv
 Werkzeug
 flask-login
+flask-socketio
+eventlet

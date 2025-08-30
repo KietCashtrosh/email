@@ -1,0 +1,82 @@
+{% extends "tailor/base.html" %}
+{% block title %}My Services{% endblock %}
+
+{% block tailor_content %}
+<style>
+    .page-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        border-bottom: 1px solid #ddd; 
+        padding-bottom: 15px; 
+        margin-bottom: 20px;
+    }
+    .button { 
+        background-color: #007bff; 
+        color: white; 
+        padding: 10px 15px; 
+        text-decoration: none; 
+        border-radius: 5px; 
+        font-weight: bold; 
+    }
+    .service-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    .service-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+    }
+    .service-card h3 {
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    .actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .actions a, .actions button {
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    .actions .delete-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+
+<div class="page-header">
+    <h1>My Offered Services</h1>
+    <a href="{{ url_for('tailor.add_service') }}" class="button">Add New Service</a>
+</div>
+
+<div class="service-grid">
+    {% for tailor_service in my_services %}
+    <div class="service-card">
+        <h3>{{ tailor_service.service.name }}</h3>
+        <p><strong>Your Price:</strong> ₹{{ "%.2f"|format(tailor_service.price) }}</p>
+        <p><strong>Est. Delivery:</strong> {{ tailor_service.estimated_days }} days</p>
+        
+        <div class="actions">
+            <a href="{{ url_for('tailor.manage_measurements', service_id=tailor_service.id) }}">Measurements</a>
+            <a href="{{ url_for('tailor.edit_service', service_id=tailor_service.id) }}">Edit</a>
+            <form method="POST" action="{{ url_for('tailor.delete_service', service_id=tailor_service.id) }}" onsubmit="return confirm('Are you sure?');">
+                <button type="submit" class="delete-btn">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+        <p>You have not added any services yet. Click "Add New Service" to get started!</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "tailor/base.html" %}
+{% block title %}My Earnings{% endblock %}
+
+{% block tailor_content %}
+<style>
+    .earnings-summary { background: #28a745; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px; }
+    .earnings-summary h2 { margin: 0; font-size: 2.5em; }
+    .earnings-table { width: 100%; border-collapse: collapse; background: #fff; }
+    .earnings-table th, .earnings-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    .earnings-table th { background-color: #f8f9fa; }
+</style>
+
+<h1>My Earnings</h1>
+
+<div class="earnings-summary">
+    <p>Total Lifetime Earnings</p>
+    <h2>₹{{ "%.2f"|format(total_earnings) }}</h2>
+</div>
+
+<h3>Completed Order History</h3>
+<table class="earnings-table">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Service</th>
+            <th>Date Completed</th>
+            <th>Your Earning</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.items[0].tailor_service.service.name }}</td>
+                <td>{{ order.updated_at.strftime('%d-%b-%Y') }}</td>
+                <td>₹{{ "%.2f"|format(order.items[0].tailor_service.tailor_earning or 0.0) }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">No completed orders yet.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

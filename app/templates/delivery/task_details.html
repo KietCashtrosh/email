@@ -1,14 +1,75 @@
-{% extends "base.html" %}
+{% extends "delivery/base.html" %}
 {% block title %}Task #{{ task.id }} Details{% endblock %}
 
-{% block content %}
+{% block delivery_content %}
 <style>
-    .task-container { max-width: 700px; margin: auto; }
-    .task-header { text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 15px; margin-bottom: 20px; }
-    .detail-card { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-top: 20px; }
-    .action-button { display: block; width: 100%; padding: 15px; font-size: 1.2em; text-align: center; background-color: #007bff; color: white; text-decoration: none; border-radius: 8px; margin-top: 30px; }
-    .measurement-form label { display: block; margin-top: 15px; font-weight: bold; }
-    .measurement-form input { width: 100%; padding: 8px; box-sizing: border-box; }
+    .task-container {
+        max-width: 700px;
+        margin: auto;
+        padding: 20px;
+    }
+    .task-header {
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .journey-step {
+        border: 2px solid #eee;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+    .journey-step.active {
+        opacity: 1;
+        border-color: #007bff;
+    }
+    .step-title {
+        margin-top: 0;
+        font-size: 1.5em;
+    }
+    .detail-card {
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .action-card {
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .action-button {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        font-size: 1.2em;
+        text-align: center;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .action-button:hover {
+        background-color: #218838;
+    }
+    .measurement-form label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    .measurement-form input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
 </style>
 
 <div class="task-container">
@@ -19,16 +80,29 @@
         <h2>Order #{{ task.order_id }}</h2>
     </div>
 
+    {% for step in journey_steps %}
+        <div class="journey-step {% if step.is_active %}active{% endif %}">
+            <h3 class="step-title">
+                {% if step.is_active %}► Step {{ loop.index }}: {% else %}Step {{ loop.index }}: {% endif %}
+                {{ step.title }}
+            </h3>
+            {% if step.contact and step.address %}
+                <p><strong>Contact:</strong> {{ step.contact.profile.first_name }} {{ step.contact.profile.last_name }} ({{ step.contact.profile.phone_number }})</p>
+                <p><strong>Address:</strong> {{ step.address.address_line1 }}, {{ step.address.city }}, {{ step.address.state }}</p>
+                <a href="https://maps.google.com/?q={{ step.address.address_line1 }},{{ step.address.city }}" target="_blank">Open in Google Maps</a>
+            {% else %}
+                <p>Contact information could not be loaded.</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+
     <div class="detail-card">
         <h3>Action Required</h3>
         <p style="font-size: 1.2em; font-weight: bold;">
             {{ task.task_type.replace('_', ' ')|title }}
         </p>
-    </div>
-
-    <div class="detail-card">
-        <h3>Contact & Address</h3>
         {% if contact_person and contact_address %}
+            <h4>Contact Details</h4>
             <p><strong>Name:</strong> {{ contact_person.profile.first_name }} {{ contact_person.profile.last_name }}</p>
             <p><strong>Phone:</strong> {{ contact_person.profile.phone_number }}</p>
             <hr>
@@ -42,28 +116,27 @@
         {% endif %}
     </div>
 
-    <div class="detail-card">
-    {% if task.order.measurement_method == 'home_visit' and task.task_type == 'pickup_from_customer' and task.status == 'assigned' %}
-        <h3>Take Customer Measurements</h3>
-        <form class="measurement-form" method="POST" action="{{ url_for('delivery.verify_otp', task_id=task.id) }}">
-            {% for field in required_measurements %}
-            <div>
-                <label for="measurement_{{ field.id }}">{{ field.name }}</label>
-                <input type="number" step="0.1" name="measurement_{{ field.id }}" required>
-            </div>
-            {% endfor %}
-            <hr style="margin: 30px 0;">
-            <h3>Confirm Handover with Customer</h3>
-            <label for="otp">Enter 6-Digit Customer OTP</label>
-            <input type="tel" name="otp" id="otp" required pattern="\d{6}" maxlength="6">
-            <button type="submit" class="action-button" style="background-color: #28a745;">Submit & Verify</button>
-        </form>
-    {% else %}
-        <h3>Confirm Handover</h3>
-        <p>Please proceed to the location and ask for the 6-digit OTP to complete the handover.</p>
-        <a href="{{ url_for('delivery.verify_otp', task_id=task.id) }}" class="action-button">Proceed to OTP Verification</a>
-    {% endif %}
+    <div class="action-card">
+        {% if task.order.measurement_method == 'home_visit' and task.task_type == 'pickup_from_customer' and task.status == 'assigned' %}
+            <h3>Take Customer Measurements</h3>
+            <form class="measurement-form" method="POST" action="{{ url_for('delivery.verify_otp', task_id=task.id) }}">
+                {% for field in required_measurements %}
+                <div>
+                    <label for="measurement_{{ field.id }}">{{ field.name }}</label>
+                    <input type="number" step="0.1" name="measurement_{{ field.id }}" id="measurement_{{ field.id }}" required>
+                </div>
+                {% endfor %}
+                <hr style="margin: 30px 0;">
+                <h4>Confirm Handover with Customer</h4>
+                <label for="otp">Enter 6-Digit Customer OTP</label>
+                <input type="tel" name="otp" id="otp" required pattern="\d{6}" maxlength="6">
+                <button type="submit" class="action-button">Submit & Verify</button>
+            </form>
+        {% else %}
+            <h3>Confirm Handover</h3>
+            <p>Please proceed to the location and ask for the 6-digit OTP to complete the handover.</p>
+            <a href="{{ url_for('delivery.verify_otp', task_id=task.id) }}" class="action-button">Proceed to OTP Verification</a>
+        {% endif %}
     </div>
-
 </div>
 {% endblock %}

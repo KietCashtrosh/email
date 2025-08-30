@@ -10,10 +10,11 @@
     </style>
 </head>
 <body>
-
+    {% extends "customer/base.html" %}
+    {% block customer_content %}
     <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
     <h1>Showing Tailors for: {{ service.name }}</h1>
-
+    
     <div class="tailor-list">
         {% if tailors %}
             {% for tailor in tailors %}
@@ -26,6 +27,6 @@
             <p>Sorry, no tailors are currently offering this service.</p>
         {% endif %}
     </div>
-
+    {% endblock %}
 </body>
 </html>

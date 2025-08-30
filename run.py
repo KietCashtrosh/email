@@ -1,7 +1,7 @@
 # run.py
 
 import os
-from app import create_app
+from app import create_app, socketio
 from manage import seed_db, seed_users, seed_admin
 
 # Create the Flask app instance using the app factory.
@@ -17,4 +17,5 @@ if __name__ == '__main__':
     # The app.run() call is placed inside this conditional
     # to ensure it only runs when the script is executed directly.
     # debug=True enables auto-reloading and an in-browser debugger for development.
-    app.run(debug=True)
+    # app.run(debug=True)
+    socketio.run(app, debug=True)
