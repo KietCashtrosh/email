@@ -1,117 +1,159 @@
 {% extends "customer/base.html" %}
-
 {% block title %}Order #{{ order.id }} Details{% endblock %}
 
 {% block customer_content %}
-<style>
-    .order-container { max-width: 850px; margin: 2rem auto; }
-    .back-link { display: inline-block; margin-bottom: 1.5rem; color: #007bff; text-decoration: none; font-weight: bold; }
-    .order-header { text-align: center; margin-bottom: 2rem; }
-    .detail-section { background-color: #ffffff; border: 1px solid #e9ecef; padding: 25px; border-radius: 8px; margin-bottom: 1.5rem; }
-    .detail-section h3 { margin-top: 0; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; }
-    .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
-    .detail-item p { margin: 8px 0; }
-    .otp-section { border: 2px solid #28a745; }
-    .otp-code { text-align: center; font-size: 2.5em; letter-spacing: 8px; margin: 20px 0; font-weight: bold; color: #155724; }
-    .measurement-list { list-style: none; padding: 0; column-count: 2; }
-    .status-tracker { display: flex; justify-content: space-between; margin-bottom: 2.5rem; position: relative; padding-top: 20px; }
-    /* ... (rest of your status tracker CSS) ... */
-</style>
+    <!-- Include Tailwind CSS for rich styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- For icons -->
 
-<div class="order-container">
-    <a href="{{ url_for('customer.order_history') }}" class="back-link">&larr; Back to Order History</a>
-    <h1 class="order-header">Order Details #{{ order.id }}</h1>
+    <div class="order-container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-gradient-to-br from-gray-50 to-white">
+        <!-- Back Button -->
+        <a href="{{ url_for('customer.order_history') }}" class="back-link inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-6 transition duration-300 ease-in-out transform hover:-translate-y-1">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Order History
+        </a>
 
-    {% set statuses = ['pending_tailor_acceptance', 'awaiting_pickup', 'in_progress', 'ready_for_delivery', 'completed'] %}
-    {% set current_status_index = statuses.index(order.order_status) if order.order_status in statuses else -1 %}
-    {% set progress_percent = (current_status_index / (statuses|length - 1)) * 100 if current_status_index != -1 else 0 %}
-    <div class="status-tracker">
-        </div>
+        <!-- Order Header -->
+        <h1 class="order-header text-2xl font-bold text-gray-900 text-center mb-8">Order Details #{{ order.id }}</h1>
 
-    {% if order.order_status == 'awaiting_pickup' and pickup_otp %}
-    <div class="detail-section otp-section">
-        <h3>Your Pickup OTP</h3>
-        <p>Please provide this OTP to the delivery partner when they arrive.</p>
-        <div class="otp-code">{{ pickup_otp }}</div>
-    </div>
-    {% endif %}
-
-    {% if order.order_status in ['ready_for_delivery', 'out_for_delivery'] and delivery_otp %}
-    <div class="detail-section otp-section">
-        <h3>Your Delivery OTP</h3>
-        <p>Your order is on its way! Provide this OTP to the partner to confirm delivery.</p>
-        <div class="otp-code">{{ delivery_otp }}</div>
-    </div>
-    {% endif %}
-
-    <div class="detail-section">
-        <h3>Order & Personnel</h3>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <p><strong>Date Placed:</strong><br>{{ order.created_at.strftime('%d-%b-%Y, %I:%M %p') }}</p>
+        <!-- Status Tracker -->
+        {% set statuses = ['pending_tailor_acceptance', 'awaiting_pickup', 'in_progress', 'ready_for_delivery', 'completed'] %}
+        {% set current_status_index = statuses.index(order.order_status) if order.order_status in statuses else -1 %}
+        {% set progress_percent = (current_status_index / (statuses|length - 1)) * 100 if current_status_index != -1 else 0 %}
+        <div class="status-tracker relative mb-8">
+            <div class="flex justify-between items-center">
+                {% for status in statuses %}
+                    <div class="flex-1 text-center">
+                        <div class="w-8 h-8 mx-auto rounded-full bg-gray-300 flex items-center justify-center text-sm text-white {{ 'bg-indigo-600' if loop.index0 <= current_status_index else '' }} transition-all duration-300">
+                            {{ loop.index }}
+                        </div>
+                        <p class="text-xs mt-2 text-gray-600 capitalize">{{ status.replace('_', ' ') }}</p>
+                    </div>
+                {% endfor %}
             </div>
-            <div class="detail-item">
-                <p><strong>Service / Design:</strong><br>{{ order.items[0].tailor_service.service.name if order.items else 'N/A' }}</p>
-            </div>
-            <div class="detail-item">
-                <p><strong>Tailor Assigned:</strong><br>
-                {% if order.tailor %}
-                    {{ order.tailor.profile.first_name }} {{ order.tailor.profile.last_name }}
-                {% else %}
-                    Pending Assignment
-                {% endif %}
-                </p>
-            </div>
-            <div class="detail-item">
-                <p><strong>Delivery Partner:</strong><br>
-                {% if delivery_partner %}
-                    {{ delivery_partner.profile.first_name }} {{ delivery_partner.profile.last_name }}
-                {% else %}
-                    Not yet assigned
-                {% endif %}
-                </p>
+            <div class="absolute top-4 left-0 w-full h-1 bg-gray-200">
+                <div class="h-1 bg-indigo-600 transition-all duration-300" style="width: {{ progress_percent }}%;"></div>
             </div>
         </div>
-    </div>
 
-    <div class="detail-section">
-        <h3>Logistics & Payment</h3>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <p><strong>Pickup/Delivery Address:</strong><br>
-                {% if order.delivery_address %}
-                   {{ order.delivery_address.address_line1 }}<br>
-                   {{ order.delivery_address.city }}, {{ order.delivery_address.state }}
-                {% endif %}
-                </p>
+        <!-- OTP Sections -->
+        {% if order.order_status == 'awaiting_pickup' and pickup_otp %}
+            <div class="detail-section bg-white border-2 border-green-500 p-6 rounded-lg shadow-md mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Your Pickup OTP</h3>
+                <p class="text-gray-600 mb-4">Please provide this OTP to the delivery partner when they arrive.</p>
+                <div class="otp-code text-center text-3xl font-bold text-green-800 letter-spacing-6 mb-4">{{ pickup_otp }}</div>
             </div>
-            <div class="detail-item">
-                <p><strong>Payment Method:</strong><br>{{ order.payment_method.replace('_', ' ')|title if order.payment_method else 'Not Specified' }}</p>
-                <p><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+        {% endif %}
+        {% if order.order_status in ['ready_for_delivery', 'out_for_delivery'] and delivery_otp %}
+            <div class="detail-section bg-white border-2 border-green-500 p-6 rounded-lg shadow-md mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Your Delivery OTP</h3>
+                <p class="text-gray-600 mb-4">Your order is on its way! Provide this OTP to the partner to confirm delivery.</p>
+                <div class="otp-code text-center text-3xl font-bold text-green-800 letter-spacing-6 mb-4">{{ delivery_otp }}</div>
+            </div>
+        {% endif %}
+
+        <!-- Order & Personnel -->
+        <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Order & Personnel</h3>
+            <div class="detail-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="detail-item">
+                    <p class="text-gray-600"><strong>Date Placed:</strong><br>{{ order.created_at.strftime('%d-%b-%Y, %I:%M %p') }}</p>
+                </div>
+                <div class="detail-item">
+                    <p class="text-gray-600"><strong>Service / Design:</strong><br>{{ order.items[0].tailor_service.service.name if order.items else 'N/A' }}</p>
+                </div>
+                <div class="detail-item">
+                    <p class="text-gray-600"><strong>Tailor Assigned:</strong><br>
+                        {% if order.tailor %}
+                            {{ order.tailor.profile.first_name }} {{ order.tailor.profile.last_name }}
+                        {% else %}
+                            Pending Assignment
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="detail-item">
+                    <p class="text-gray-600"><strong>Delivery Partner:</strong><br>
+                        {% if delivery_partner %}
+                            {{ delivery_partner.profile.first_name }} {{ delivery_partner.profile.last_name }}
+                        {% else %}
+                            Not yet assigned
+                        {% endif %}
+                    </p>
+                </div>
             </div>
         </div>
+
+        <!-- Logistics & Payment -->
+        <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Logistics & Payment</h3>
+            <div class="detail-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="detail-item">
+                    <p class="text-gray-600"><strong>Pickup/Delivery Address:</strong><br>
+                        {% if order.delivery_address %}
+                            {{ order.delivery_address.address_line1 }}<br>
+                            {{ order.delivery_address.city }}, {{ order.delivery_address.state }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="detail-item">
+                    <p class="text-gray-600"><strong>Payment Method:</strong><br>{{ order.payment_method.replace('_', ' ')|title if order.payment_method else 'Not Specified' }}</p>
+                    <p class="text-gray-600"><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Measurements Provided -->
+        <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Measurements Provided</h3>
+            {% if order.items and order.items[0].measurements %}
+                <ul class="measurement-list list-none columns-2 gap-4">
+                    {% for measurement in order.items[0].measurements %}
+                        <li class="text-gray-600 mb-2"><span class="font-medium">{{ measurement.measurement_field.name }}:</span> {{ measurement.value }} inches</li>
+                    {% endfor %}
+                </ul>
+                {% if order.order_status == 'completed' %}
+                    <a href="{{ url_for('customer.save_measurements', item_id=order.items[0].id) }}" class="save-link inline-flex items-center px-4 py-2 mt-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out">
+                        <i class="fas fa-save mr-2"></i> Save these Measurements for Future Use
+                    </a>
+                {% endif %}
+            {% elif order.measurement_method == 'home_visit' %}
+                <p class="text-gray-600">A home visit was requested. The measurements will be updated here as soon as our partner submits them.</p>
+            {% else %}
+                <p class="text-gray-600">No measurements have been recorded for this order yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Review Section -->
+        {% if order.order_status == 'completed' %}
+            {% if not order.rating %}
+                <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Leave a Review</h3>
+                    <p class="text-gray-600 mb-4">How was your experience with {{ order.tailor.profile.first_name }}?</p>
+                    <form class="rating-form space-y-4" method="POST" action="{{ url_for('customer.rate_order', order_id=order.id) }}">
+                        <div>
+                            <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
+                            <div class="rating flex flex-row-reverse justify-end">
+                                {% for i in range(5, 0, -1) %}
+                                    <input type="radio" id="star{{ i }}" name="score" value="{{ i }}" required class="hidden">
+                                    <label for="star{{ i }}" class="text-2xl text-gray-300 cursor-pointer hover:text-yellow-400 {{ 'text-yellow-400' if loop.index0 < 5 and loop.index0 >= (5 - loop.length + loop.index0) }} transition duration-200">&starf;</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
+                            <textarea name="comment" id="comment" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out"></textarea>
+                        </div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Your Review</h3>
+                    <p class="text-gray-600"><strong>Your Rating:</strong> {{ order.rating.score }} ★</p>
+                    <p class="text-gray-600"><strong>Your Comment:</strong> "{{ order.rating.comment }}"</p>
+                </div>
+            {% endif %}
+        {% endif %}
     </div>
-    
-    <div class="detail-section">
-    <h3>Measurements Provided</h3>
-
-    {% if order.items and order.items[0].measurements %}
-        <ul class="measurement-list">
-            {% for measurement in order.items[0].measurements %}
-                <li><span>{{ measurement.measurement_field.name }}:</span> {{ measurement.value }} inches</li>
-            {% endfor %}
-        </ul>
-    {% if order.order_status == 'completed' %}
-            <a href="{{ url_for('customer.save_measurements', item_id=order.items[0].id) }}" class="save-link">
-                Save these Measurements for Future Use
-            </a>
-    {% endif %}
-    {% elif order.measurement_method == 'home_visit' %}
-        <p>A home visit was requested. The measurements will be updated here as soon as our partner submits them.</p>
-    {% else %}
-        <p>No measurements have been recorded for this order yet.</p>
-    {% endif %}
-</div>
-
-</div>
 {% endblock %}

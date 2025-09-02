@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager  # Import LoginManager
 from .config import config
 from flask_socketio import SocketIO, join_room # Import SocketIO
+from flask_wtf.csrf import CSRFProtect
 
 
 # Intialization
@@ -16,6 +17,7 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
 socketio = SocketIO()  # Create a SocketIO instance
+csrf = CSRFProtect()
 
 @socketio.on('join')
 def on_join(data):
@@ -34,6 +36,7 @@ def create_app(config_name='default'):
     migrate.init_app(app, db)
     login_manager.init_app(app)
     socketio.init_app(app) # Initialize SocketIO with the app
+    csrf.init_app(app)  # Initialize CSRF protection
 
 
     # Import and register Blueprints

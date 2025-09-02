@@ -2,101 +2,80 @@
 {% block title %}Manage Services{% endblock %}
 
 {% block admin_content %}
-<style>
-    .admin-container { 
-        max-width: 1100px; 
-        margin: auto; 
-    }
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-    .button {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 15px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-    .service-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
-    .service-card {
-        background: #fff;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 20px;
-    }
-    .service-card h3 {
-        margin-top: 0;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-    }
-    .category-badge {
-        display: inline-block;
-        background-color: #e9ecef;
-        color: #495057;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
-        margin-right: 5px;
-        margin-top: 5px;
-    }
-    .actions {
-        margin-top: 20px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    .actions .delete-form button {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-</style>
+    <!-- Include Tailwind CSS and additional libraries for rich UI -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- For icons -->
 
-<div class="admin-container">
-    <a href="{{ url_for('admin.dashboard') }}">&larr; Back to Admin Dashboard</a>
-    <div class="page-header">
-        <h1>Manage Master Services</h1>
-        <div>
-            <a href="{{ url_for('admin.add_service') }}" class="button">Add New Service</a>
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Back Button -->
+            <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-6 transition duration-200 ease-in-out">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Admin Dashboard
+            </a>
+
+            <!-- Page Header -->
+            <div class="page-header flex justify-between items-center border-b border-gray-200 pb-6 mb-8">
+                <h1 class="text-3xl font-extrabold text-gray-900">Manage Master Services</h1>
+                <a href="{{ url_for('admin.add_service') }}" class="button inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ease-in-out">
+                    <i class="fas fa-plus mr-2"></i> Add New Service
+                </a>
+            </div>
+
+            <!-- Service Grid -->
+            <div class="service-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for service in services %}
+                    <div class="service-card bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <!-- Service Image -->
+                        {% if service.image_url %}
+                            <img src="{{ url_for('static', filename='uploads/' + service.image_url) }}" alt="{{ service.name }}" class="w-full h-48 object-cover bg-gray-200">
+                        {% else %}
+                            <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">No Image</div>
+                        {% endif %}
+
+                        <!-- Service Details -->
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ service.name }}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                {% for category in service.categories %}
+                                    <span class="category-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        {{ category.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-sm text-gray-500">No categories assigned</span>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="actions flex flex-col sm:flex-row gap-3">
+                                <a href="{{ url_for('admin.edit_service', service_id=service.id) }}" class="items-center px-2 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200 ease-in-out">
+                                    <i class="fas fa-edit mr-2"></i> Edit
+                                </a>
+                                <a href="{{ url_for('admin.manage_service_measurements', service_id=service.id) }}" class="items-center px-2 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+                                    <i class="fas fa-ruler mr-2"></i> Measurements
+                                </a>
+                                <a href="{{ url_for('admin.manage_service_variations', service_id=service.id) }}" class="items-center px-2 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200 ease-in-out">
+                                    <i class="fas fa-stream mr-2"></i> Variations
+                                </a>
+                                <form class="delete-form inline-block" method="POST" action="{{ url_for('admin.delete_service', service_id=service.id) }}" onsubmit="return confirm('Are you sure you want to delete {{ service.name }}?');">
+                                    <button type="submit" class="items-center px-2 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 ease-in-out">
+                                        <i class="fas fa-trash-alt mr-2"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Empty State -->
+            {% if not services %}
+                <div class="text-center py-12 bg-white rounded-xl shadow-md">
+                    <p class="text-gray-500 text-lg">No services available. Add a new service to get started!</p>
+                    <a href="{{ url_for('admin.add_service') }}" class="mt-4 inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ease-in-out">
+                        <i class="fas fa-plus mr-2"></i> Add New Service
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </div>
-
-    <div class="service-grid">
-        {% for service in services %}
-        <div class="service-card">
-            <h3>{{ service.name }}</h3>
-            
-            <div>
-            {% for category in service.categories %}
-                <span class="category-badge">{{ category.name }}</span>
-            {% else %}
-                <small>No categories assigned.</small>
-            {% endfor %}
-            </div>
-            <div class="actions">
-                <a href="{{ url_for('admin.edit_service', service_id=service.id) }}">Edit</a> |
-                <a href="{{ url_for('admin.manage_service_measurements', service_id=service.id) }}">Measurements</a> |
-                <a href="{{ url_for('admin.manage_service_variations', service_id=service.id) }}">Variations</a>
-                <form class="delete-form" method="POST" action="{{ url_for('admin.delete_service', service_id=service.id) }}" onsubmit="return confirm('Are you sure?');">
-                    <button type="submit">Delete</button>
-                </form>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-</div>
 {% endblock %}

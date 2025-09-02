@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% block title %}Edit Variation{% endblock %}
+{% block admin_content %}
+    <h1>Edit Variation: {{ variation.name }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Variation Name:</label>
+        <input type="text" name="name" value="{{ variation.name }}" required>
+        
+        <label style="margin-top: 15px;">Change Image:</label>
+        {% if variation.image_url %}
+            <img src="{{ url_for('static', filename='uploads/' + variation.image_url) }}" width="100">
+        {% endif %}
+        <input type="file" name="image_file">
+        
+        <button type="submit" style="margin-top: 20px;">Update Variation</button>
+    </form>
+    <a href="{{ url_for('admin.manage_service_variations', service_id=variation.service_id) }}">Cancel</a>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "customer/base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block customer_content %}
+<style>
+    .place-order-btn {
+        background-color: #10B981;
+        color: white;
+    }
+    .place-order-btn:hover {
+        background-color: #059669;
+    }
+</style>
+
+<div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">Checkout</h1>
+    <form method="POST" action="{{ url_for('customer.checkout') }}">
+        {{ form.hidden_tag() }}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">1. Select Delivery Address</h3>
+                    {% for address in addresses %}
+                        <div class="mb-4">
+                            <input type="radio" name="delivery_address_id" value="{{ address.id }}" id="addr_{{ address.id }}" {% if address.is_default %}checked{% endif %} class="mr-2" required>
+                            <label for="addr_{{ address.id }}" class="text-[var(--gray)]">
+                                <strong>{{ address.address_line1 }}</strong>, {{ address.city }}
+                            </label>
+                        </div>
+                    {% else %}
+                        <p class="text-[var(--gray)]">No addresses found. <a href="{{ url_for('customer.account') }}" class="text-[var(--secondary)] hover:underline">Please add an address.</a></p>
+                    {% endfor %}
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">2. Select Measurement Method</h3>
+                    <div class="mb-4">
+                        <input type="radio" name="measurement_method" value="online_submission" id="method_online" checked class="mr-2">
+                        <label for="method_online" class="text-[var(--gray)]">Enter Measurements Online</label>
+                    </div>
+                    <div class="mb-4">
+                        <input type="radio" name="measurement_method" value="home_visit" id="method_visit" class="mr-2">
+                        <label for="method_visit" class="text-[var(--gray)]">Request a Home Visit</label>
+                    </div>
+                    {% for error in form.measurement_method.errors %}
+                        <span class="text-red-500 text-sm">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+                    <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">3. Select Payment Method</h3>
+                    <div class="mb-4">
+                        <input type="radio" name="payment_method" value="cash_on_delivery" id="payment_cod" checked class="mr-2">
+                        <label for="payment_cod" class="text-[var(--gray)]">Cash on Delivery</label>
+                    </div>
+                    <div class="mb-4">
+                        <input type="radio" name="payment_method" value="online_advance" id="payment_advance" class="mr-2">
+                        <label for="payment_advance" class="text-[var(--gray)]">Online Advance</label>
+                    </div>
+                    <div class="mb-4">
+                        <input type="radio" name="payment_method" value="online_full" id="payment_full" class="mr-2">
+                        <label for="payment_full" class="text-[var(--gray)]">Online Full</label>
+                    </div>
+                    {% for error in form.payment_method.errors %}
+                        <span class="text-red-500 text-sm">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-[var(--light-gray)] p-6 rounded-lg shadow-md sticky top-4">
+                <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">Order Summary</h3>
+                {% if cart and cart.items %}
+                    {% for item in cart.items %}
+                        <p class="flex justify-between text-[var(--gray)]">
+                            <span>{{ item.tailor_service.service.name }}</span>
+                            <span>₹{{ "%.2f"|format(item.tailor_service.price) }}</span>
+                        </p>
+                    {% endfor %}
+                    <hr class="my-4">
+                    <h4 class="flex justify-between text-[var(--gray)]">
+                        <span>Total:</span>
+                        <span>₹{{ "%.2f"|format(cart.total) }}</span>
+                    </h4>
+                {% else %}
+                    <p class="text-[var(--gray)]">No items in cart.</p>
+                {% endif %}
+                {{ form.submit(class="place-order-btn px-4 py-2 rounded w-full mt-4") }}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

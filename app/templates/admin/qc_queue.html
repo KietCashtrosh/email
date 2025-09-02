@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+{% block title %}Quality Check Queue{% endblock %}
+
+{% block admin_content %}
+<style>
+    .qc-table { width: 100%; border-collapse: collapse; background: #fff; }
+    .qc-table th, .qc-table td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
+    .actions form { display: inline-block; margin-right: 5px; }
+    .pass-btn { background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    .fail-btn { background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+</style>
+
+<h1>Quality Check Queue</h1>
+<p>Review the following orders and mark them as passed or failed.</p>
+
+<table class="qc-table">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Tailor</th>
+            <th>Service</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td><a href="{{ url_for('admin.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+            <td>{{ order.customer.profile.first_name }}</td>
+            <td>{{ order.tailor.profile.first_name }}</td>
+            <td>{{ order.items[0].tailor_service.service.name }}</td>
+            <td class="actions">
+                <form method="POST" action="{{ url_for('admin.qc_pass', order_id=order.id) }}">
+                    <button type="submit" class="pass-btn">Pass</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.qc_fail', order_id=order.id) }}">
+                    <button type="submit" class="fail-btn">Fail</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" style="text-align: center;">The Quality Check queue is empty.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

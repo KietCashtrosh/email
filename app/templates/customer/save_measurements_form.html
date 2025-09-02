@@ -1,74 +1,29 @@
 {% extends "customer/base.html" %}
-
 {% block title %}Save Measurements{% endblock %}
-
 {% block customer_content %}
-<style>
-    .form-container { 
-        max-width: 600px; 
-        margin: 20px auto; 
-        padding: 30px; 
-        border: 1px solid #ddd; 
-        border-radius: 8px; 
-        background-color: #fff;
-    }
-    .summary { 
-        background-color: #f8f9fa; 
-        padding: 15px; 
-        border-radius: 5px; 
-        margin-bottom: 20px; 
-        border-left: 4px solid #007bff;
-    }
-    label { 
-        display: block; 
-        margin-top: 15px; 
-        font-weight: bold; 
-    }
-    input, select { 
-        width: 100%; 
-        padding: 10px; 
-        box-sizing: border-box; 
-        margin-top: 5px; 
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    button { 
-        width: 100%; 
-        padding: 12px; 
-        font-size: 16px; 
-        background-color: #28a745; 
-        color: white; 
-        border: none; 
-        border-radius: 4px; 
-        margin-top: 20px; 
-        cursor: pointer; 
-    }
-</style>
-
-<div class="form-container">
-    <h1>Save Measurements for Future Use</h1>
-    <div class="summary">
-        <p>You are saving the measurements from your recent order for:</p>
-        <p><strong>{{ order_item.tailor_service.service.name }}</strong></p>
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">Save Measurements for Future Use</h1>
+    <div class="bg-[var(--light-gray)] p-6 rounded-lg shadow-md mb-6 border-l-4 border-[var(--primary)]">
+        <p class="text-[var(--gray)]">You are saving the measurements from your recent order for:</p>
+        <p class="text-[var(--gray)]"><strong>{{ order_item.tailor_service.service.name }}</strong></p>
     </div>
-    
-    <form method="POST">
-        <div>
-            <label for="profile_name">Give this measurement set a name:</label>
-            <input type="text" name="profile_name" id="profile_name" required placeholder="e.g., My Perfect T-Shirt, Office Shirt">
+    <form method="POST" action="{{ url_for('customer.save_measurements', order_item_id=order_item.id) }}" class="bg-white p-6 rounded-lg shadow-md">
+        {{ form.hidden_tag() }}
+        <div class="mb-4">
+            <label for="{{ form.profile_name.id }}" class="block text-[var(--gray)] font-bold">Give this measurement set a name</label>
+            {{ form.profile_name(class="w-full p-2 border rounded", placeholder="e.g., My Perfect T-Shirt, Office Shirt", required=true) }}
+            {% for error in form.profile_name.errors %}
+                <span class="text-red-500 text-sm">{{ error }}</span>
+            {% endfor %}
         </div>
-
-        <div>
-            <label for="sub_profile_id">Assign to a Family Member (Optional):</label>
-            <select name="sub_profile_id" id="sub_profile_id">
-                <option value="">-- Myself (Default) --</option>
-                {% for profile in sub_profiles %}
-                    <option value="{{ profile.id }}">{{ profile.name }} ({{ profile.relationship }})</option>
-                {% endfor %}
-            </select>
+        <div class="mb-4">
+            <label for="{{ form.sub_profile_id.id }}" class="block text-[var(--gray)] font-bold">Assign to a Family Member (Optional)</label>
+            {{ form.sub_profile_id(class="w-full p-2 border rounded") }}
+            {% for error in form.sub_profile_id.errors %}
+                <span class="text-red-500 text-sm">{{ error }}</span>
+            {% endfor %}
         </div>
-
-        <button type="submit">Save Measurements</button>
+        {{ form.submit(class="btn-primary px-4 py-2 rounded w-full", style="background-color: #10B981;") }}
     </form>
 </div>
 {% endblock %}

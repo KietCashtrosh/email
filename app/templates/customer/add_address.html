@@ -1,34 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add New Address</title>
-    </head>
-<body>
-    <h1>Add a New Address</h1>
-    <form method="POST">
-        <div>
-            <label>Address Line 1:</label>
-            <input type="text" name="address_line1" required>
-        </div>
-        <div>
-            <label>City:</label>
-            <input type="text" name="city" required>
-        </div>
-        <div>
-            <label>State:</label>
-            <input type="text" name="state" required>
-        </div>
-        <div>
-            <label>Postal Code:</label>
-            <input type="text" name="postal_code" required>
-        </div>
-        <div>
-            <input type="checkbox" name="is_default">
-            <label>Make this my default address</label>
-        </div>
-        <button type="submit">Save Address</button>
-    </form>
-    <a href="{{ url_for('customer.profile') }}">Cancel</a>
-</body>
-</html>
+{% extends "customer/base.html" %}
+{% block title %}Add New Address{% endblock %}
+{% block customer_content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">Add a New Address</h1>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <form method="POST" action="{{ url_for('customer.add_address') }}">
+            {{ form.hidden_tag() }}
+            <div class="mb-4">
+                <label for="{{ form.address_line1.id }}" class="block text-[var(--gray)] font-bold">Address Line 1</label>
+                {{ form.address_line1(class="w-full p-2 border rounded") }}
+                {% for error in form.address_line1.errors %}
+                    <span class="text-red-500 text-sm">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="mb-4">
+                <label for="{{ form.city.id }}" class="block text-[var(--gray)] font-bold">City</label>
+                {{ form.city(class="w-full p-2 border rounded") }}
+                {% for error in form.city.errors %}
+                    <span class="text-red-500 text-sm">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="mb-4">
+                <label for="{{ form.state.id }}" class="block text-[var(--gray)] font-bold">State</label>
+                {{ form.state(class="w-full p-2 border rounded") }}
+                {% for error in form.state.errors %}
+                    <span class="text-red-500 text-sm">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="mb-4">
+                <label for="{{ form.postal_code.id }}" class="block text-[var(--gray)] font-bold">Postal Code</label>
+                {{ form.postal_code(class="w-full p-2 border rounded") }}
+                {% for error in form.postal_code.errors %}
+                    <span class="text-red-500 text-sm">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="mb-4 flex items-center">
+                {{ form.is_default(class="mr-2") }}
+                <label for="{{ form.is_default.id }}" class="text-[var(--gray)]">Make this my default address</label>
+                {% for error in form.is_default.errors %}
+                    <span class="text-red-500 text-sm">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="flex space-x-4">
+                {{ form.submit(class="btn-primary px-4 py-2 rounded w-full") }}
+                <a href="{{ url_for('customer.account') }}" class="btn-secondary px-4 py-2 rounded w-full text-center">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

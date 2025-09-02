@@ -593,3 +593,27 @@ class OrderNote(db.Model):
 
     order = db.relationship('Order', backref='notes')
     author = db.relationship('User')
+
+# app/models.py
+
+class Cart(db.Model):
+    __tablename__ = 'carts'
+    id = db.Column(db.Integer, primary_key=True)
+    # A cart belongs to one user
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='cart', uselist=False)
+    items = db.relationship('CartItem', backref='cart', cascade="all, delete-orphan")
+
+class CartItem(db.Model):
+    __tablename__ = 'cart_items'
+    id = db.Column(db.Integer, primary_key=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=False)
+    # A cart item points to a specific tailor's service offering
+    tailor_service_id = db.Column(db.Integer, db.ForeignKey('tailor_services.id'), nullable=False)
+    quantity = db.Column(db.Integer, default=1)
+    
+    # We will store the selected variations and measurements here later
+    
+    tailor_service = db.relationship('TailorService')

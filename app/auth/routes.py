@@ -1,68 +1,70 @@
-# app/auth/routes.py
-
 import random
+import re
+from datetime import datetime
 from flask import render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SelectField, SubmitField
+from wtforms.validators import DataRequired, Email, Length, Regexp
 from . import auth_bp
 from .. import db
 from ..models import User, UserProfile, TailorProfile, DeliveryPartnerProfile
-import re
 
 # --- Placeholder for SMS service ---
-# You would replace this with a real implementation from Twilio, etc.
-# --- (send_otp_sms function remains the same) ---
-
-
 def send_otp_sms(phone_number, otp):
     print("--- MOCK SMS ---")
     print(f"Sending OTP {otp} to {phone_number}")
     print("----------------")
 
+# --- Flask-WTF Forms ---
+class LoginForm(FlaskForm):
+    identifier = StringField('Email or Phone Number', validators=[DataRequired()])
+    password = PasswordField('Password (if using email)')
+    submit = SubmitField('Continue')
 
-# --- NEW HELPER FUNCTION ---
+class VerifyOTPForm(FlaskForm):
+    otp = StringField('OTP', validators=[DataRequired(), Regexp(r'^\d{6}$', message='OTP must be a 6-digit number')])
+    submit = SubmitField('Verify')
+
+class RegisterForm(FlaskForm):
+    role = SelectField('Role', choices=[('customer', 'Customer'), ('tailor', 'Tailor'), ('delivery_partner', 'Delivery Partner')], validators=[DataRequired()])
+    phone_number = StringField('Phone Number', validators=[DataRequired(), Regexp(r'^\d{10}$', message='Phone number must be 10 digits')])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, message='Password must be at least 8 characters')])
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    submit = SubmitField('Register')
+
+# --- Helper Function ---
 def check_profile_and_redirect(user):
-    """
-    Checks if a user's profile is complete.
-    Redirects to the update profile page if not, otherwise to the dashboard.
-    """
     if user.role == 'admin':
         return redirect(url_for('admin.dashboard'))
-
     if user.role == 'tailor':
         return redirect(url_for('tailor.dashboard'))
-
-    # --- NEW: Add the delivery partner case ---
-    elif user.role == 'delivery_partner':
-        # Assuming you will create a 'delivery_bp' blueprint for them
+    if user.role == 'delivery_partner':
         return redirect(url_for('delivery.dashboard'))
-
-    elif user.role == 'customer':
-        # A profile is "incomplete" if the first_name is missing.
+    if user.role == 'customer':
         if not user.profile or not user.profile.first_name:
             return redirect(url_for('customer.update_profile'))
         return redirect(url_for('customer.dashboard'))
-    
-    else:
-        # Fallback
-        return redirect(url_for('auth.logout'))
+    return redirect(url_for('auth.logout'))
 
-
-
-# --- MODIFIED: Unified Login Route ---
+# --- Login Route ---
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('customer.dashboard'))
+        return redirect(url_for('customer.account', tab='details'))
 
-    if request.method == 'POST':
-        identifier = request.form.get('identifier')
-        password = request.form.get('password')
+    form = LoginForm()
+    if form.validate_on_submit():
+        identifier = form.identifier.data
+        password = form.password.data
 
-        # Regex to check if the identifier is an email
+        # Regex to check if identifier is an email
         is_email = re.match(r"[^@]+@[^@]+\.[^@]+", identifier)
 
         if is_email:
-            # --- Email & Password Logic ---
+            # Email & Password Logic
             user = User.query.filter_by(email=identifier).first()
             if user and user.check_password(password):
                 login_user(user, remember=True)
@@ -70,14 +72,13 @@ def login():
             else:
                 flash('Invalid email or password.', 'danger')
         else:
-            # --- Phone Number & OTP Logic ---
+            # Phone Number & OTP Logic
             phone_number = identifier
-            # Minimal validation for phone number
-            if not phone_number or not phone_number.isdigit():
-                flash('Please enter a valid phone number or email.', 'danger')
+            if not phone_number.isdigit() or len(phone_number) != 10:
+                flash('Please enter a valid 10-digit phone number or email.', 'danger')
                 return redirect(url_for('auth.login'))
 
-            # Generate OTP, store it in the session, and send it
+            # Generate OTP, store in session, and send
             otp = random.randint(100000, 999999)
             session['otp'] = otp
             session['phone_number_for_verification'] = phone_number
@@ -87,114 +88,84 @@ def login():
             flash('An OTP has been sent to your phone number.', 'info')
             return redirect(url_for('auth.verify'))
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', form=form, current_year=datetime.now().year)
 
-
-# --- MODIFIED: OTP Verification with Implicit Registration ---
+# --- OTP Verification Route ---
 @auth_bp.route('/verify', methods=['GET', 'POST'])
 def verify():
-    # Check if we have the necessary info in the session
     if 'phone_number_for_verification' not in session or 'verification_context' not in session:
         flash('Something went wrong. Please start over.', 'danger')
         return redirect(url_for('auth.login'))
 
-    if request.method == 'POST':
-        submitted_otp = request.form.get('otp')
+    form = VerifyOTPForm()
+    if form.validate_on_submit():
+        submitted_otp = form.otp.data
         if 'otp' in session and str(session['otp']) == submitted_otp:
             phone_number = session['phone_number_for_verification']
             context = session['verification_context']
-
             user = User.query.filter_by(phone_number=phone_number).first()
 
-            # Logic for new registration
             if context == 'registration':
-                if not user: # This should always be true for registration
-                     # Create new user
+                if not user:
                     user = User(phone_number=phone_number, role='customer', is_verified=True)
-                    # Create a blank profile
                     profile = UserProfile(user=user, phone_number=phone_number)
                     db.session.add(user)
                     db.session.add(profile)
                     db.session.commit()
                     flash('Your account has been created and verified!', 'success')
-                else: # This is an edge case, but good to handle
+                else:
                     user.is_verified = True
                     db.session.commit()
 
-            # This handles both login and the final step of registration
             if not user:
                 flash('User not found. Please register.', 'danger')
                 return redirect(url_for('auth.register'))
 
             login_user(user, remember=True)
-
-            # Clean up session
             session.pop('otp', None)
             session.pop('phone_number_for_verification', None)
             session.pop('verification_context', None)
-
             return check_profile_and_redirect(user)
         else:
             flash('Invalid OTP. Please try again.', 'danger')
 
-    # For the GET request, just render the template
-    return render_template('auth/verify_otp.html')
+    return render_template('auth/verify_otp.html', form=form, current_year=datetime.now().year)
 
-
+# --- Register Route ---
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('customer.dashboard'))
+        return redirect(url_for('customer.account', tab='details'))
 
-    if request.method == 'POST':
-        role = request.form.get('role')
-        if role not in ['customer', 'tailor', 'delivery_partner']:
-            flash('Please select a valid role.', 'danger')
-            return redirect(url_for('auth.register'))
-        
-        phone = request.form.get('phone_number')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
+    form = RegisterForm()
+    if form.validate_on_submit():
+        role = form.role.data
+        phone = form.phone_number.data
+        email = form.email.data
+        password = form.password.data
+        first_name = form.first_name.data
+        last_name = form.last_name.data
 
         # Check for existing users
         if User.query.filter_by(phone_number=phone).first():
             flash('This phone number is already registered.', 'danger')
             return redirect(url_for('auth.register'))
-        if email and User.query.filter_by(email=email).first():
+        if User.query.filter_by(email=email).first():
             flash('This email address is already registered.', 'danger')
             return redirect(url_for('auth.register'))
 
-        # --- THIS IS THE CORRECTED LOGIC ---
-
-        # 1. Create the User object
-        new_user = User(
-            phone_number=phone, 
-            email=email,
-            role=role,
-            is_verified=False
-        )
+        # Create user and profiles
+        new_user = User(phone_number=phone, email=email, role=role, is_verified=False)
         new_user.set_password(password)
-        
-        # 2. Create the associated profiles
-        new_user.profile = UserProfile(
-            first_name=first_name, 
-            last_name=last_name, 
-            phone_number=phone
-        )
+        new_user.profile = UserProfile(first_name=first_name, last_name=last_name, phone_number=phone)
         
         if role == 'tailor':
             new_user.tailor_profile = TailorProfile()
         elif role == 'delivery_partner':
             new_user.delivery_partner_profile = DeliveryPartnerProfile()
 
-        # 3. Add the parent User object to the session.
-        #    SQLAlchemy will handle saving the associated profiles automatically due to the 'cascade' option.
         db.session.add(new_user)
         db.session.commit()
-        
-        # --- END OF CORRECTION ---
 
         # Send OTP for verification
         otp = random.randint(100000, 999999)
@@ -206,9 +177,21 @@ def register():
         flash('Registration successful! An OTP has been sent to verify your phone number.', 'info')
         return redirect(url_for('auth.verify'))
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', form=form, current_year=datetime.now().year)
 
+# --- Resend OTP Route ---
+@auth_bp.route('/resend_otp', methods=['GET'])
+def resend_otp():
+    if 'phone_number_for_verification' not in session:
+        flash('Something went wrong. Please start over.', 'danger')
+        return redirect(url_for('auth.login'))
+    otp = random.randint(100000, 999999)
+    session['otp'] = otp
+    send_otp_sms(session['phone_number_for_verification'], otp)
+    flash('A new OTP has been sent to your phone number.', 'info')
+    return redirect(url_for('auth.verify'))
 
+# --- Logout Route ---
 @auth_bp.route('/logout')
 @login_required
 def logout():

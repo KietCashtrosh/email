@@ -1,50 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Tailoring Services</title>
-    <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        h1 { text-align: center; }
-        label { display: block; margin-top: 15px; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
-        .flash { padding: 10px; margin: 10px 0; border-radius: 4px; }
-        .info { background-color: #d1ecf1; color: #0c5460; }
-        .danger { background-color: #f8d7da; color: #721c24; }
-    </style>
-</head>
-<body>
-
-    <h1>Login or Sign Up</h1>
-    <p style="text-align: center;">Enter your email and password, or phone number to receive an OTP.</p>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <form method="POST" action="{{ url_for('auth.login') }}">
-        <div>
-            <label for="identifier">Email or Phone Number:</label>
-            <input type="text" id="identifier" name="identifier" required>
-        </div>
-
-        <div>
-            <label for="password">Password (if using email):</label>
-            <input type="password" id="password" name="password">
-        </div>
-        
-        <button type="submit">Continue</button>
-    </form>
-    
-    <p style="text-align: center; margin-top: 20px;">
-        Need to create an account with a password? <a href="{{ url_for('auth.register') }}">Register here</a>
-    </p>
-
-</body>
-</html>
+{% extends "auth/base.html" %}
+{% block title %}Login - Tailoring Services{% endblock %}
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-[var(--light-gray)] py-10">
+    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md border-2 border-[var(--light-gray)]">
+        <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-4">Login or Sign Up</h1>
+        <p class="text-[var(--gray)] text-center mb-6">Enter your email or phone number to continue.</p>
+        <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
+            {{ form.hidden_tag() }}
+            <div>
+                <label for="{{ form.identifier.id }}" class="block text-[var(--gray)] font-semibold mb-2">Email or Phone Number</label>
+                {{ form.identifier(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
+                {% for error in form.identifier.errors %}
+                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="relative">
+                <label for="{{ form.password.id }}" class="block text-[var(--gray)] font-semibold mb-2">Password (if using email)</label>
+                {{ form.password(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", id="password") }}
+                <button type="button" id="password-toggle" class="absolute right-3 top-10 text-[var(--gray)] focus:outline-none">Show</button>
+                {% for error in form.password.errors %}
+                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
+                {% endfor %}
+            </div>
+            {{ form.submit(class="btn-primary w-full p-3 rounded-lg text-white hover:bg-[var(--primary)]/90 transition-all duration-200") }}
+        </form>
+        <p class="text-[var(--gray)] text-center mt-6">
+            Need to create an account? <a href="{{ url_for('auth.register') }}" class="text-[var(--secondary)] hover:underline">Register here</a>
+        </p>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordInput = document.getElementById('password');
+        const toggle = document.getElementById('password-toggle');
+        toggle.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            toggle.textContent = type === 'password' ? 'Show' : 'Hide';
+        });
+    });
+</script>
+{% endblock %}

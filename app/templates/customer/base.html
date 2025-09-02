@@ -1,34 +1,101 @@
 {% extends "base.html" %}
+{% block title %}Stichie{% endblock %}
+{% block navbar %}
 
-{% block content %}
 <style>
     .navbar {
-        background-color: #fff;
+        background-color: var(--primary);
         padding: 15px 30px;
-        border-bottom: 1px solid #ddd;
+    }
+    .navbar a {
+        text-decoration: none;
+        color: white;
+        margin: 0 15px;
+        font-weight: bold;
+    }
+    .navbar a:hover {
+        color: var(--light-orange);
+    }
+    .page-content {
+        max-width: 1100px;
+        margin: 20px auto;
+    }
+    .active-profile-indicator {
+        color: var(--light-gray);
+        border: 1px solid var(--light-purple);
+        padding: 5px 10px;
+        border-radius: 5px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
     }
-    .navbar a { text-decoration: none; color: #333; margin: 0 15px; font-weight: bold; }
-    .page-content { max-width: 1100px; margin: 20px auto; }
+    .active-profile-indicator a {
+        font-weight: normal;
+        margin-left: 5px;
+        color: var(--light-orange);
+    }
+    .cart-count-badge {
+        background-color: var(--secondary);
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+        margin-left: 5px;
+    }
 </style>
 
-<nav class="navbar">
-    <div>
-        <a href="{{ url_for('customer.dashboard') }}" style="font-size: 1.5em;">Stichie</a>
-        <a href="#">Services</a>
-        <a href="#">Tailors</a>
+<nav class="navbar bg-[var(--primary)] text-white p-4 flex flex-col md:flex-row md:items-center md:justify-between">
+    <div class="flex items-center justify-between">
+        <a href="{{ url_for('customer.dashboard') }}" class="text-2xl font-bold">Stichie</a>
+        <button class="md:hidden text-white
+         focus:outline-none" onclick="document.getElementById('nav-menu').classList.toggle('hidden')">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
-    <div>
+    <div id="nav-menu" class="hidden md:flex flex-col md:flex-row md:items-center md:space-x-4 mt-4 md:mt-0">
+        <a href=#>Services</a>
+        <a href=#>Tailors</a>
         <a href="{{ url_for('customer.order_history') }}">My Orders</a>
-        <a href="{{ url_for('customer.my_profiles') }}">My Family</a>
-        <a href="{{ url_for('customer.profile') }}">My Profile</a>
-        <a href="{{ url_for('auth.logout') }}">Logout</a>
+        <a href="{{ url_for('customer.view_cart') }}">
+            <i class="fas fa-shopping-cart"></i> Cart
+            <span id="cart-item-count" class="cart-count-badge" style="display: none;"></span>
+        </a>
+        <a href="{{ url_for('customer.account') }}">My Account</a>
+        <div class="notification-bell">
+            <span id="notification-bell">🔔</span>
+            <span id="notification-count" style="display: none;">0</span>
+            <div id="notifications-dropdown" style="display: none;"></div>
+        </div>
+        {% if session.active_profile_name %}
+            <span class="active-profile-indicator">
+                Shopping for: <strong>{{ session.active_profile_name }}</strong>
+                <a href="{{ url_for('customer.account', tab='family') }}">(Change)</a>
+            </span>
+        {% endif %}
+        <a href="{{ url_for('auth.logout') }}" class="btn-secondary px-4 py-2 rounded">Logout</a>
     </div>
 </nav>
 
+<!-- Before </body> -->
+<script>
+    function updateCartCount() {
+        fetch("{{ url_for('customer.cart_count') }}")
+            .then(response => response.json())
+            .then(data => {
+                const countEl = document.getElementById('cart-item-count');
+                if (data.count > 0) {
+                    countEl.textContent = data.count;
+                    countEl.style.display = 'inline';
+                } else {
+                    countEl.style.display = 'none';
+                }
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>
+{% endblock %}
+{% block content %}
 <div class="page-content">
-    {% block customer_content %} {% endblock %}
+    {% block customer_content %}{% endblock %}
 </div>
 {% endblock %}

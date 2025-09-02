@@ -1,37 +1,20 @@
 {% extends "customer/base.html" %}
 {% block title %}Select Saved Measurements{% endblock %}
-
 {% block customer_content %}
-<style>
-    .container { max-width: 800px; margin: auto; }
-    .page-header { text-align: center; margin-bottom: 30px; }
-    .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-    .profile-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #fff; }
-    .profile-card h3 { margin-top: 0; }
-    .button { display: inline-block; margin-top: 15px; background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; }
-</style>
-
-<div class="container">
-    <a href="{{ url_for('customer.order_options', tailor_service_id=tailor_service.id) }}">&larr; Back to Options</a>
-    <div class="page-header">
-        <h1>Select a Saved Measurement Profile</h1>
-        <p>Choose one of your previously saved measurements for a <strong>{{ tailor_service.service.name }}</strong>.</p>
-    </div>
-    
-    <div class="profile-grid">
+<div class="max-w-5xl mx-auto">
+    <a href="{{ url_for('customer.order_options', tailor_service_id=tailor_service.id) }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Options</a>
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-4">Select a Saved Measurement Profile</h1>
+    <p class="text-[var(--gray)] mb-6">Choose one of your previously saved measurements for a <strong>{{ tailor_service.service.name }}</strong>.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {% for profile in saved_profiles %}
-            <div class="profile-card">
-                <h3>{{ profile.profile_name }}</h3>
-                {% if profile.sub_profile %}
-                    <p>For: {{ profile.sub_profile.name }}</p>
-                {% else %}
-                    <p>For: Myself</p>
-                {% endif %}
-                <a href="{{ url_for('customer.new_order', tailor_service_id=tailor_service.id, measurement_profile_id=profile.id) }}" class="button">Use These Measurements</a>
+            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+                <h3 class="text-lg font-semibold text-[var(--gray)] mb-2">{{ profile.profile_name }}</h3>
+                <p class="text-[var(--gray)]">For: {{ profile.sub_profile.name if profile.sub_profile else 'Myself' }}</p>
+                <a href="{{ url_for('customer.new_order', tailor_service_id=tailor_service.id, measurement_profile_id=profile.id) }}" class="btn-primary px-4 py-2 rounded mt-4 inline-block">Use These Measurements</a>
             </div>
         {% else %}
-            <p>You have no saved measurements for this type of service yet. Please go back and enter them manually or request a home visit.</p>
+            <p class="text-[var(--gray)]">You have no saved measurements for this type of service yet. Please go back and <a href="{{ url_for('customer.order_options', tailor_service_id=tailor_service.id) }}" class="text-[var(--secondary)] hover:underline">enter them manually or request a home visit</a>.</p>
         {% endfor %}
     </div>
 </div>
-{% endblock %}  
+{% endblock %}

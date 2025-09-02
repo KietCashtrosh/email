@@ -1,40 +1,32 @@
 {% extends "customer/base.html" %}
 {% block title %}Services for {{ profile.name }}{% endblock %}
-
 {% block customer_content %}
-<style>
-    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-    .card { border: 1px solid #ddd; border-radius: 8px; text-decoration: none; color: #333; text-align: center; overflow: hidden; background-color: #fff; }
-    .card img { width: 100%; height: 120px; object-fit: cover; }
-    .card h3 { margin: 10px; }
-    .view-toggle { text-align: center; margin: 20px 0; }
-</style>
-
-<a href="{{ url_for('customer.dashboard') }}">&larr; Change Profile</a>
-
-{% if show_all %}
-    <h2 style="text-align: center;">Showing All Services</h2>
-    <div class="view-toggle">
-        <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}">Show Recommended for {{ profile.name }}</a>
-    </div>
-{% else %}
-    <h2 style="text-align: center;">Recommended Services for <strong>{{ profile.name }}</strong></h2>
-    <div class="view-toggle">
-        <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id, show='all') }}">Show All Services</a>
-    </div>
-{% endif %}
-
-
-<div class="grid-container">
-    {% for service in services %}
-        <a href="{{ url_for('customer.service_variations', service_id=service.id) }}" class="card">
-            {% if service.image_url %}
-                <img src="{{ service.image_url }}" alt="{{ service.name }}">
-            {% endif %}
-            <h3>{{ service.name }}</h3>
-        </a>
+<div class="max-w-5xl mx-auto">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Change Profile</a>
+    {% if show_all %}
+        <h2 class="text-2xl font-semibold text-[var(--gray)] text-center mb-4">Showing All Services</h2>
+        <div class="text-center mb-6">
+            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}" class="text-[var(--secondary)] hover:underline">Show Recommended for {{ profile.name }}</a>
+        </div>
     {% else %}
-        <p>No services found matching this filter.</p>
-    {% endfor %}
+        <h2 class="text-2xl font-semibold text-[var(--gray)] text-center mb-4">Recommended Services for <strong>{{ profile.name }}</strong></h2>
+        <div class="text-center mb-6">
+            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id, show='all') }}" class="text-[var(--secondary)] hover:underline">Show All Services</a>
+        </div>
+    {% endif %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for service in services %}
+            <a href="{{ url_for('customer.service_variations', service_id=service.id) }}" class="bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+                {% if service.image_url %}
+                    <img src="{{ service.image_url }}" alt="{{ service.name }}" class="w-full h-32 object-cover rounded-t-lg">
+                {% else %}
+                    <img src="https://via.placeholder.com/200x120.png?text={{ service.name|replace(' ', '+') }}" alt="{{ service.name }}" class="w-full h-32 object-cover rounded-t-lg">
+                {% endif %}
+                <h3 class="text-lg font-semibold text-[var(--gray)] p-4">{{ service.name }}</h3>
+            </a>
+        {% else %}
+            <p class="text-[var(--gray)]">No services found matching this filter.</p>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

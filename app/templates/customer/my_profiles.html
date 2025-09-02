@@ -1,63 +1,60 @@
 {% extends "customer/base.html" %}
 {% block title %}My Family Profiles{% endblock %}
-
 {% block customer_content %}
-<style>
-    .profile-container { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; }
-    .form-section, .list-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input, select { width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px; }
-    button { width: 100%; padding: 12px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
-    .profile-list-item { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
-</style>
+<div class="max-w-5xl mx-auto">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Dashboard</a>
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-4">My Family Profiles</h1>
+    <p class="text-[var(--gray)] mb-6">Add profiles for family members to save their measurements and personalize your shopping experience.</p>
 
-<a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
-<h1>My Family Profiles</h1>
-<p>Add profiles for family members to save their measurements and personalize your shopping experience.</p>
-
-<div class="profile-container">
-    <div class="form-section">
-        <h2>Add New Profile</h2>
-        <form method="POST">
-            <div>
-                <label for="name">Name:</label>
-                <input type="text" name="name" required>
-            </div>
-            <div>
-                <label for="relationship">Relationship:</label>
-                <input type="text" name="relationship" required placeholder="e.g., Son, Wife, Myself">
-            </div>
-            <div>
-                <label for="gender">Gender:</label>
-                <select name="gender" id="gender" required>
-                    <option value="" disabled selected>-- Select Gender --</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                </select>
-            </div>
-             <div>
-                <label for="age_group">Age Group:</label>
-                <select name="age_group" id="age_group" required>
-                    <option value="" disabled selected>-- Select Age Group --</option>
-                    <option value="Adult">Adult</option>
-                    <option value="Kid">Kid</option>
-                </select>
-            </div>
-            <button type="submit">Save Profile</button>
-        </form>
-    </div>
-    <div class="list-section">
-        <h2>Saved Profiles</h2>
-        {% if profiles %}
-            {% for profile in profiles %}
-                <div class="profile-list-item">
-                    <strong>{{ profile.name }}</strong> ({{ profile.relationship }})
-                    <br><small>{{ profile.gender }}, {{ profile.age_group }}</small>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-[var(--gray)] mb-4">Add New Profile</h2>
+            <form method="POST" action="{{ url_for('customer.my_profiles') }}">
+                {{ form.hidden_tag() }}
+                <div class="mb-4">
+                    <label for="{{ form.name.id }}" class="block text-[var(--gray)] font-bold">Name</label>
+                    {{ form.name(class="w-full p-2 border rounded") }}
+                    {% for error in form.name.errors %}
+                        <span class="text-red-500 text-sm">{{ error }}</span>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>You have not added any profiles yet.</p>
-        {% endif %}
+                <div class="mb-4">
+                    <label for="{{ form.relationship.id }}" class="block text-[var(--gray)] font-bold">Relationship</label>
+                    {{ form.relationship(class="w-full p-2 border rounded", placeholder="e.g., Son, Wife, Myself") }}
+                    {% for error in form.relationship.errors %}
+                        <span class="text-red-500 text-sm">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="mb-4">
+                    <label for="{{ form.gender.id }}" class="block text-[var(--gray)] font-bold">Gender</label>
+                    {{ form.gender(class="w-full p-2 border rounded") }}
+                    {% for error in form.gender.errors %}
+                        <span class="text-red-500 text-sm">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="mb-4">
+                    <label for="{{ form.age_group.id }}" class="block text-[var(--gray)] font-bold">Age Group</label>
+                    {{ form.age_group(class="w-full p-2 border rounded") }}
+                    {% for error in form.age_group.errors %}
+                        <span class="text-red-500 text-sm">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {{ form.submit(class="btn-primary px-4 py-2 rounded w-full") }}
+            </form>
+        </div>
+        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-[var(--gray)] mb-4">Saved Profiles</h2>
+            {% if profiles %}
+                {% for profile in profiles %}
+                    <div class="bg-[var(--light-gray)] p-4 rounded-lg mb-4">
+                        <strong class="text-[var(--gray)]">{{ profile.name }}</strong> ({{ profile.relationship }})
+                        <p class="text-[var(--gray)] text-sm">{{ profile.gender }}, {{ profile.age_group }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-[var(--gray)]">You have not added any profiles yet.</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

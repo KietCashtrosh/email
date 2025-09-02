@@ -1,32 +1,22 @@
 {% extends "customer/base.html" %}
 {% block title %}Order Options{% endblock %}
-
 {% block customer_content %}
-    <style>
-        .options-container { max-width: 800px; margin: 0 auto; text-align: center; }
-        .option-card { border: 1px solid #ddd; border-radius: 8px; padding: 30px; text-decoration: none; color: #333; display: block; margin-top: 20px; transition: border-color 0.3s; }
-        .option-card:hover { border-color: #007bff; }
-        .option-card h2 { margin-top: 0; }
-        .option-card p { color: #666; }
-    </style>
-
-    <div class="options-container">
-        <h1>How would you like to provide measurements?</h1>
-        <p>You are ordering a <strong>{{ tailor_service.service.name }}</strong>.</p>
-
-        <a href="{{ url_for('customer.new_order', tailor_service_id=tailor_service.id) }}" class="option-card">
-            <h2>Enter / Review Measurements Online</h2>
-            <p>We'll pre-fill the form with your saved measurements if available. You can review or update them.</p>
+<div class="max-w-4xl mx-auto text-center">
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-4">How would you like to provide measurements?</h1>
+    <p class="text-[var(--gray)] mb-6">You are ordering a <strong>{{ tailor_service.service.name }}</strong>.</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{{ url_for('customer.new_order', tailor_service_id=tailor_service.id) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+            <h2 class="text-xl font-semibold text-[var(--gray)] mb-2">Enter / Review Measurements Online</h2>
+            <p class="text-[var(--gray)]">We'll pre-fill the form with your saved measurements if available. You can review or update them.</p>
         </a>
-
-        <a href="{{ url_for('customer.request_visit', tailor_service_id=tailor_service.id) }}" class="option-card">
-            <h2>Request a Home Visit</h2>
-            <p>A professional will visit your home to take measurements and collect your fabric.</p>
+        <a href="{{ url_for('customer.request_visit', tailor_service_id=tailor_service.id) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+            <h2 class="text-xl font-semibold text-[var(--gray)] mb-2">Request a Home Visit</h2>
+            <p class="text-[var(--gray)]">A professional will visit your home to take measurements and collect your fabric.</p>
         </a>
-
-        <a href="{{ url_for('customer.select_measurements', tailor_service_id=tailor_service.id) }}" class="option-card">
-    <h2>Use Saved Measurements</h2>
-    <p>Select from a previously saved measurement profile for a quick reorder.</p>
-</a>
+        <a href="{{ url_for('customer.select_measurements', tailor_service_id=tailor_service.id) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+            <h2 class="text-xl font-semibold text-[var(--gray)] mb-2">Use Saved Measurements</h2>
+            <p class="text-[var(--gray)]">Select from a previously saved measurement profile for a quick reorder.</p>
+        </a>
     </div>
+</div>
 {% endblock %}

@@ -1,63 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Request Home Visit</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
-        .summary { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;}
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input[type="date"], select { width: 100%; padding: 8px; box-sizing: border-box; }
-        .button { width: 100%; padding: 12px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-top: 30px; cursor: pointer; }
-        .address-option { margin-bottom: 10px; }
-        .address-option label { font-weight: normal; }
-    </style>
-</head>
-<body>
-    {% extends "customer/base.html" %}
-    {% block customer_content %}
-    <a href="{{ url_for('customer.order_options', tailor_service_id=tailor_service.id) }}">&larr; Back to Options</a>
+{% extends "customer/base.html" %}
+{% block title %}Request Home Visit{% endblock %}
+{% block customer_content %}
+<div class="max-w-3xl mx-auto">
+    <a href="{{ url_for('customer.order_options', tailor_service_id=tailor_service.id) }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Options</a>
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-4">Request a Home Visit</h1>
+    <p class="text-[var(--gray)] text-center mb-6">Confirm your address and select a time slot for our visit.</p>
 
-    <h1>Request a Home Visit</h1>
-    <p style="text-align: center; color: #666;">Confirm your address and select a time slot for our visit.</p>
-
-    <div class="summary">
-        <p><strong>Service:</strong> {{ tailor_service.service.name }}</p>
-        <p><strong>Tailor:</strong> {{ tailor_service.tailor.profile.first_name }}</p>
+    <div class="bg-[var(--light-gray)] p-6 rounded-lg shadow-md mb-6">
+        <p class="text-[var(--gray)]"><strong>Service:</strong> {{ tailor_service.service.name }}</p>
+        <p class="text-[var(--gray)]"><strong>Tailor:</strong> {{ tailor_service.tailor.profile.first_name }}</p>
     </div>
 
-    <form method="POST">
-        
-        <h3>1. Confirm Your Address</h3>
+    <form method="POST" action="{{ url_for('customer.request_visit', tailor_service_id=tailor_service.id) }}" class="bg-white p-6 rounded-lg shadow-md">
+        {{ form.hidden_tag() }}
+        <h2 class="text-xl font-semibold text-[var(--gray)] mb-4">1. Confirm Your Address</h2>
         {% for address in addresses %}
-        <div class="address-option">
-            <input type="radio" name="address_id" value="{{ address.id }}" id="addr_{{ address.id }}" {% if address.is_default %}checked{% endif %} required>
-            <label for="addr_{{ address.id }}">
-                <strong>{{ address.address_line1 }}</strong><br>
-                {{ address.city }}, {{ address.state }} - {{ address.postal_code }}
-            </label>
-        </div>
+            <div class="mb-4 flex items-start">
+                <input type="radio" name="address_id" value="{{ address.id }}" id="addr_{{ address.id }}" {% if address.is_default %}checked{% endif %} class="mt-1 mr-2" required>
+                <label for="addr_{{ address.id }}" class="text-[var(--gray)]">
+                    <strong>{{ address.address_line1 }}</strong>
+                    {% if address.is_default %}
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded ml-2">Default</span>
+                    {% endif %}
+                    <p>{{ address.city }}, {{ address.state }} - {{ address.postal_code }}</p>
+                </label>
+            </div>
+        {% else %}
+            <p class="text-[var(--gray)]">No addresses found. <a href="{{ url_for('customer.account') }}" class="text-[var(--secondary)] hover:underline">Add a new address</a></p>
         {% endfor %}
-        <a href="{{ url_for('customer.profile') }}">+ Add a new address</a>
-        <h3 style="margin-top: 30px;">2. Select a Preferred Pickup Slot</h3>
-        <div>
-            <label for="pickup_date">Date:</label>
-            <input type="date" id="pickup_date" name="pickup_date" min="{{ now.strftime('%Y-%m-%d') }}" required>
+        {% if addresses %}
+            <a href="{{ url_for('customer.account') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">+ Add a new address</a>
+        {% endif %}
+        <h2 class="text-xl font-semibold text-[var(--gray)] mt-6 mb-4">2. Select a Preferred Pickup Slot</h2>
+        <div class="mb-4">
+            <label for="{{ form.pickup_date.id }}" class="block text-[var(--gray)] font-bold">Date</label>
+            {{ form.pickup_date(class="w-full p-2 border rounded", min=now.strftime('%Y-%m-%d'), required=true) }}
+            {% for error in form.pickup_date.errors %}
+                <span class="text-red-500 text-sm">{{ error }}</span>
+            {% endfor %}
         </div>
-        <div>
-            <label for="pickup_time">Time:</label>
-            <select id="pickup_time" name="pickup_time" required>
-                <option value="" disabled selected>-- Choose a time slot --</option>
-                <option value="09:00-11:00">Morning (9:00 AM - 11:00 AM)</option>
-                <option value="12:00-14:00">Afternoon (12:00 PM - 2:00 PM)</option>
-                <option value="15:00-17:00">Late Afternoon (3:00 PM - 5:00 PM)</option>
-                <option value="18:00-20:00">Evening (6:00 PM - 8:00 PM)</option>
-            </select>
+        <div class="mb-4">
+            <label for="{{ form.pickup_time.id }}" class="block text-[var(--gray)] font-bold">Time</label>
+            {{ form.pickup_time(class="w-full p-2 border rounded", required=true) }}
+            {% for error in form.pickup_time.errors %}
+                <span class="text-red-500 text-sm">{{ error }}</span>
+            {% endfor %}
         </div>
-
-        <button type="submit" class="button">Confirm Request</button>
+        {{ form.submit(class="btn-primary px-4 py-2 rounded w-full mt-6") }}
     </form>
-
-    {% endblock %}
-</body>
-</html>
+</div>
+{% endblock %}

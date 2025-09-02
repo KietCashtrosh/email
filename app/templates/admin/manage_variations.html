@@ -1,32 +1,74 @@
 {% extends "admin/base.html" %}
 {% block title %}Manage Variations for {{ service.name }}{% endblock %}
+
 {% block admin_content %}
-<style>
-    .container { max-width: 800px; margin: auto; }
-    .form-section, .list-section { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-top: 20px;}
-</style>
-<div class="container">
-    <a href="{{ url_for('admin.services') }}">&larr; Back to Services</a>
-    <h1>Manage Variations for <em>{{ service.name }}</em></h1>
+    <!-- Include Tailwind CSS for rich styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- For icons -->
 
-    <div class="form-section">
-        <h3>Add New Variation</h3>
-        <form method="POST">
-            <label for="name">Variation Name:</label>
-            <input type="text" name="name" required placeholder="e.g., Slim Fit, Princess Cut">
-            <button type="submit">Add Variation</button>
-        </form>
-    </div>
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto">
+            <!-- Back Button -->
+            <a href="{{ url_for('admin.services') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-6 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Services
+            </a>
 
-    <div class="list-section">
-        <h3>Existing Variations</h3>
-        <ul>
-            {% for variation in service.variations %}
-                <li>{{ variation.name }}</li>
-            {% else %}
-                <li>No variations added yet for this service.</li>
-            {% endfor %}
-        </ul>
+            <!-- Header -->
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Manage Variations for <em class="text-indigo-600">{{ service.name }}</em></h1>
+
+            <!-- Grid Container -->
+            <div class="grid-container grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Form Section -->
+                <div class="form-section bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Variation</h3>
+                    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Variation Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out">
+                        </div>
+                        <div>
+                            <label for="image_file" class="block text-sm font-medium text-gray-700">Variation Image</label>
+                            <input type="file" name="image_file" id="image_file" accept="image/png, image/jpeg" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out">
+                        </div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                            Add Variation
+                        </button>
+                    </form>
+                </div>
+
+                <!-- List Section -->
+                <div class="list-section bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Existing Variations</h3>
+                    {% if service.variations %}
+                        <div class="space-y-3">
+                            {% for variation in service.variations %}
+                                <div class="variation-item flex items-center justify-between p-4 bg-gray-50 rounded-md shadow-sm hover:bg-gray-100 transition duration-200 ease-in-out">
+                                    <div class="flex items-center">
+                                        {% if variation.image_url %}
+                                            <img src="{{ url_for('static', filename='uploads/' + variation.image_url) }}" alt="{{ variation.name }}" class="w-12 h-12 object-cover rounded-md mr-4 border border-gray-200">
+                                        {% else %}
+                                            <div class="w-12 h-12 bg-gray-200 flex items-center justify-center rounded-md mr-4 text-gray-500 text-xs">No Image</div>
+                                        {% endif %}
+                                        <span class="text-sm font-medium text-gray-900">{{ variation.name }}</span>
+                                    </div>
+                                    <div class="actions flex gap-2">
+                                        <a href="{{ url_for('admin.edit_variation', variation_id=variation.id) }}" class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200 ease-in-out">
+                                            <i class="fas fa-edit mr-1 text-base"></i> Edit
+                                        </a>
+                                        <form method="POST" action="{{ url_for('admin.delete_variation', variation_id=variation.id) }}" onsubmit="return confirm('Are you sure you want to delete {{ variation.name }}?');" class="inline-block">
+                                            <button type="submit" class="delete-btn inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 ease-in-out">
+                                                <i class="fas fa-trash-alt mr-1 text-base"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-gray-500">No variations added yet for this service.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 {% endblock %}

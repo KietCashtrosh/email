@@ -7,6 +7,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+
 class Config:
     """Base configuration class. Contains default settings."""
     # SECRET_KEY is crucial for security, used for session signing.
@@ -18,6 +19,8 @@ class Config:
     # every time a change is about to be made in the database.
     # It's often not needed and adds overhead.
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    UPLOAD_FOLDER = os.path.join(basedir, 'static/uploads/')
 
     @staticmethod
     def init_app(app):

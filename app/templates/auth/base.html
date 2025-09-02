@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Tailoring Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7C1EE9;
+            --secondary: #E1760C;
+            --light-purple: #D8BFFF;
+            --light-orange: #FFDAB9;
+            --light-gray: #F3F4F6;
+            --gray: #6B7280;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: rgba(124, 30, 233, 0.9);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-[var(--light-gray)] min-h-screen flex flex-col">
+    <header class="bg-white shadow-md">
+        <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a href=# class="text-2xl font-bold text-[var(--primary)]">Tailoring Services</a>
+            <div class="hidden md:flex space-x-4">
+                <a href="{{ url_for('auth.login') }}" class="text-[var(--secondary)] hover:underline {% if request.endpoint == 'auth.login' %}font-bold{% endif %}">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="text-[var(--secondary)] hover:underline {% if request.endpoint == 'auth.register' %}font-bold{% endif %}">Register</a>
+            </div>
+            <button class="md:hidden text-[var(--gray)] focus:outline-none" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+        <div class="hidden md:hidden bg-white shadow-md" id="mobile-menu">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col space-y-2">
+                <a href="{{ url_for('auth.login') }}" class="text-[var(--secondary)] hover:underline {% if request.endpoint == 'auth.login' %}font-bold{% endif %}">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="text-[var(--secondary)] hover:underline {% if request.endpoint == 'auth.register' %}font-bold{% endif %}">Register</a>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    {% for category, message in messages %}
+                        <div class="p-4 mb-4 rounded-lg animate-fade-in {% if category == 'success' %}bg-green-500 text-white{% elif category == 'danger' %}bg-red-500 text-white{% elif category == 'info' %}bg-blue-500 text-white{% else %}bg-yellow-500 text-white{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block auth_content %}{% endblock %}
+    </main>
+    <footer class="bg-white shadow-inner mt-10 py-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-[var(--gray)]">
+            <p>&copy; {{ current_year }} Tailoring Services. All rights reserved.</p>
+            <p class="mt-2">
+                <a href=# class="text-[var(--secondary)] hover:underline">Home</a> |
+                <a href=# class="text-[var(--secondary)] hover:underline">Contact</a>
+            </p>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const menu = document.getElementById('mobile-menu');
+            toggle.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

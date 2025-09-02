@@ -1,53 +1,24 @@
 {% extends "customer/base.html" %}
-
 {% block title %}Select a {{ service.name }} Style{% endblock %}
-
 {% block customer_content %}
-<style>
-    .container { max-width: 1000px; margin: auto; }
-    .page-header { text-align: center; margin: 20px 0 30px; }
-    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-    .card { 
-        border: 1px solid #ddd; 
-        border-radius: 8px; 
-        text-decoration: none; 
-        color: #333; 
-        text-align: center; 
-        overflow: hidden; 
-        background-color: #fff; 
-        transition: box-shadow 0.3s; 
-    }
-    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .card img { 
-        width: 100%; 
-        height: 150px; 
-        object-fit: cover; 
-        background-color: #f0f0f0; /* Placeholder color */
-    }
-    .card h3 { margin: 15px 10px; }
-</style>
-
-<div class="container">
-    <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Services</a>
-    <div class="page-header">
-        <h1>Choose a style for <strong>{{ service.name }}</strong></h1>
+<div class="max-w-5xl mx-auto">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Services</a>
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-[var(--primary)]">Choose a style for <strong>{{ service.name }}</strong></h1>
     </div>
-
-    <div class="grid-container">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for variation in service.variations %}
-            <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="card">
-                
+            <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
                 {% if variation.image_url %}
-                    <img src="{{ variation.image_url }}" alt="{{ variation.name }}">
+                    <img src="{{ variation.image_url }}" alt="{{ variation.name }}" class="w-full h-40 object-cover rounded-t-lg">
                 {% else %}
-                    <img src="https://via.placeholder.com/220x150.png?text={{ variation.name|replace(' ', '+') }}" alt="{{ variation.name }}">
+                    <img src="https://via.placeholder.com/220x150.png?text={{ variation.name|replace(' ', '+') }}" alt="{{ variation.name }}" class="w-full h-40 object-cover rounded-t-lg">
                 {% endif %}
-
-                <h3>{{ variation.name }}</h3>
+                <h3 class="text-lg font-semibold text-[var(--gray)] p-4">{{ variation.name }}</h3>
             </a>
         {% else %}
-            <p>No specific variations are available for this service. 
-                <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}">Click here to see tailors who can provide this service.</a>
+            <p class="text-[var(--gray)]">No specific variations are available for this service. 
+                <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="text-[var(--secondary)] hover:underline">Click here to see tailors who can provide this service.</a>
             </p>
         {% endfor %}
     </div>

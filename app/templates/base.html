@@ -1,69 +1,158 @@
-<!-- app/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <title>{% block title %}{% endblock %} - Stichie</title>
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome (for bell icon, etc.) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Toastr -->
+<!-- In <head> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css">
+
+
+    
+    <!-- SocketIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
     <style>
-        /* Basic styling for notification bell and dropdown */
+        :root {
+            --primary: #7C1EE9; /* Purple */
+            --secondary: #E1760C; /* Orange */
+            --light-purple: #D8BFFF;
+            --light-orange: #FFDAB9;
+            --gray: #6B7280;
+            --light-gray: #F3F4F6;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #6B1ACF; /* Darker purple */
+        }
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #C7650A; /* Darker orange */
+        }
         .notification-bell {
             position: relative;
             display: inline-block;
             cursor: pointer;
             font-size: 24px;
-            margin: 10px;
         }
         #notification-count {
             position: absolute;
             top: -5px;
             right: -5px;
-            background-color: red;
+            background-color: var(--secondary);
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
             font-size: 12px;
+            display: none;
         }
         #notifications-dropdown {
             position: absolute;
             top: 40px;
             right: 0;
-            background-color: white;
-            border: 1px solid #ccc;
+            background-color: var(--light-gray);
+            border: 1px solid var(--gray);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             width: 300px;
             max-height: 400px;
             overflow-y: auto;
             z-index: 1000;
+            display: none;
         }
         .notification-item {
             padding: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--light-gray);
         }
         .notification-item a {
             text-decoration: none;
-            color: #333;
+            color: var(--gray);
         }
         .notification-item a:hover {
-            color: #007bff;
+            color: var(--secondary);
         }
+        .toast-success {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+}
     </style>
+
     {% block head %}{% endblock %}
 </head>
-<body>
-    {% if current_user.is_authenticated %}
-    <div class="notification-bell">
-        <span id="notification-bell">🔔</span>
-        <span id="notification-count" style="display: none;">0</span>
-        <div id="notifications-dropdown" style="display: none;">
-            <!-- Notifications will be populated here -->
-        </div>
-    </div>
-    {% endif %}
-    {% block content %}{% endblock %}
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    {% block navbar %}
+        <nav class="bg-[var(--primary)] text-white p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="{{ url_for('index') }}" class="text-2xl font-bold">Stichie</a>
+                <div class="flex items-center space-x-6">
+                    {% if current_user.is_authenticated %}
+                        <div class="notification-bell" id="notification-bell">
+                            <i class="fas fa-bell"></i>
+                            <span id="notification-count"></span>
+                            <div id="notifications-dropdown"></div>
+                        </div>
+                        <a href="{{ url_for('auth.logout') }}" class="hover:text-[var(--light-orange)]">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="hover:text-[var(--light-orange)]">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="hover:text-[var(--light-orange)]">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    {% endblock %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mx-auto mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 rounded-lg 
+                        {% if category == 'success' %}bg-green-500 text-white
+                        {% elif category == 'danger' %}bg-red-500 text-white
+                        {% elif category == 'warning' %}bg-yellow-500 text-white
+                        {% elif category == 'info' %}bg-blue-500 text-white{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto mt-8 mb-16 flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--primary)] text-white text-center p-4">
+        <p>&copy; {{ current_year }} Stichie. All rights reserved.</p>
+    </footer>
+
     {% if current_user.is_authenticated %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -72,7 +161,6 @@
             const countEl = document.getElementById('notification-count');
             const dropdown = document.getElementById('notifications-dropdown');
 
-            // Configure Toastr options
             toastr.options = {
                 timeOut: 5000,
                 positionClass: 'toast-top-right',
@@ -80,7 +168,6 @@
                 closeButton: true
             };
 
-            // Update notification count display
             function updateCount(count) {
                 if (count > 0) {
                     countEl.textContent = count;
@@ -90,79 +177,66 @@
                 }
             }
 
-            // Join user-specific and role-specific rooms on connect
             socket.on('connect', function() {
                 socket.emit('join', { room: '{{ current_user.id }}' });
                 {% if current_user.role == 'admin' %}
-                socket.emit('join', { room: 'admin' });
+                    socket.emit('join', { room: 'admin' });
                 {% elif current_user.role == 'delivery_partner' %}
-                socket.emit('join', { room: 'delivery_partner' });
+                    socket.emit('join', { room: 'delivery_partner' });
                 {% endif %}
-                console.log('Connected to SocketIO server');
             });
 
-            // Handle connection errors
             socket.on('connect_error', function(error) {
-                console.error('SocketIO connection error:', error);
                 toastr.error('Failed to connect to notification server. Please refresh.', 'Connection Error');
             });
 
-            // Handle new notifications
             socket.on('new_notification', function(data) {
                 let currentCount = parseInt(countEl.textContent || '0');
                 updateCount(currentCount + 1);
-                toastr.success(data.message, 'New Notification', {
+                toastr.info(data.message, 'New Notification', {
                     onclick: function() {
-                        if (data.link) {
-                            window.location.href = data.link;
-                        }
+                        if (data.link) window.location.href = data.link;
                     }
                 });
             });
 
-            // Fetch initial unread count
-            fetch("{{ url_for('notifications.unread_count') }}")
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to fetch unread count');
-                    return response.json();
-                })
-                .then(data => updateCount(data.count))
-                .catch(error => {
-                    console.error('Error fetching unread count:', error);
-                    toastr.error('Error loading notifications.', 'Error');
-                });
+            if (bell && countEl && dropdown) {
+                // Load unread count on page load
+                fetch("{{ url_for('notifications.unread_count') }}")
+                    .then(r => r.json())
+                    .then(data => updateCount(data.count))
+                    .catch(() => toastr.error('Error loading notifications.', 'Error'));
 
-            // Handle bell click to show/hide notifications
-            bell.addEventListener('click', function() {
-                const isVisible = dropdown.style.display === 'block';
-                dropdown.style.display = isVisible ? 'none' : 'block';
-                if (!isVisible) {
-                    updateCount(0); // Reset count
-                    fetch("{{ url_for('notifications.get_notifications') }}")
-                        .then(response => {
-                            if (!response.ok) throw new Error('Failed to fetch notifications');
-                            return response.json();
-                        })
-                        .then(notifications => {
-                            dropdown.innerHTML = '';
-                            if (notifications.length === 0) {
-                                dropdown.innerHTML = '<div class="notification-item">No new notifications.</div>';
-                            }
-                            notifications.forEach(n => {
-                                const item = document.createElement('div');
-                                item.className = 'notification-item';
-                                item.innerHTML = `<a href="${n.link || '#'}">${n.message}</a>`;
-                                dropdown.appendChild(item);
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Error fetching notifications:', error);
-                            toastr.error('Error loading notifications.', 'Error');
-                        });
-                }
-            });
+                // Dropdown toggle
+                bell.addEventListener('click', function() {
+                    const isVisible = dropdown.style.display === 'block';
+                    dropdown.style.display = isVisible ? 'none' : 'block';
+                    if (!isVisible) {
+                        updateCount(0);
+                        fetch("{{ url_for('notifications.get_notifications') }}")
+                            .then(r => r.json())
+                            .then(notifications => {
+                                dropdown.innerHTML = '';
+                                if (notifications.length === 0) {
+                                    dropdown.innerHTML = '<div class="notification-item">No new notifications.</div>';
+                                }
+                                notifications.forEach(n => {
+                                    const item = document.createElement('div');
+                                    item.className = 'notification-item';
+                                    item.innerHTML = `<a href="${n.link || '#'}">${n.message}</a>`;
+                                    dropdown.appendChild(item);
+                                });
+                            })
+                            .catch(() => toastr.error('Error loading notifications.', 'Error'));
+                    }
+                });
+            }
         });
     </script>
     {% endif %}
+<!-- Before </body> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+    {% block scripts %}{% endblock %}
+
 </body>
 </html>

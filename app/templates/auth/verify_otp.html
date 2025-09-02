@@ -1,44 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP</title>
-    <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        h1 { text-align: center; }
-        label { display: block; margin-top: 15px; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
-        .flash { padding: 10px; margin: 10px 0; border-radius: 4px; }
-        .info { background-color: #d1ecf1; color: #0c5460; }
-        .danger { background-color: #f8d7da; color: #721c24; }
-    </style>
-</head>
-<body>
-
-    <h1>Enter Verification Code</h1>
-    <p style="text-align: center;">We've sent a 6-digit code to your phone number. Please enter it below.</p>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    <form method="POST" action="{{ url_for('auth.verify') }}">
-        <div>
-            <label for="otp">6-Digit OTP:</label>
-            <input type="text" id="otp" name="otp" required pattern="\d{6}" maxlength="6">
-        </div>
-        
-        <button type="submit">Verify & Login</button>
-    </form>
-    
-    <p style="text-align: center; margin-top: 20px;">
-        Didn't receive a code? <a href="{{ url_for('auth.login') }}">Go back and try again</a>
-    </p>
-</body>
-</html>
+{% extends "auth/base.html" %}
+{% block title %}Verify OTP - Tailoring Services{% endblock %}
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-[var(--light-gray)] py-10">
+    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md border-2 border-[var(--light-gray)]">
+        <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-4">Verify OTP</h1>
+        <p class="text-[var(--gray)] text-center mb-6">Enter the 6-digit OTP sent to your phone number.</p>
+        <form method="POST" action="{{ url_for('auth.verify') }}" class="space-y-6">
+            {{ form.hidden_tag() }}
+            <div>
+                <label for="{{ form.otp.id }}" class="block text-[var(--gray)] font-semibold mb-2">OTP</label>
+                {{ form.otp(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
+                {% for error in form.otp.errors %}
+                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
+                {% endfor %}
+            </div>
+            {{ form.submit(class="btn-primary w-full p-3 rounded-lg text-white hover:bg-[var(--primary)]/90 transition-all duration-200") }}
+        </form>
+        <p class="text-[var(--gray)] text-center mt-6">
+            Didn't receive an OTP? <a href="{{ url_for('auth.resend_otp') }}" class="text-[var(--secondary)] hover:underline">Resend OTP</a> or <a href="{{ url_for('auth.login') }}" class="text-[var(--secondary)] hover:underline">Try again</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

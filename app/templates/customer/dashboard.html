@@ -1,45 +1,19 @@
 {% extends "customer/base.html" %}
-{% block title %} Dashboard {% endblock %}
+{% block title %}Dashboard{% endblock %}
 {% block customer_content %}
-<style>
-    .profile-selector { text-align: center; margin-top: 40px; }
-    .profile-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-    .profile-card {
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #333;
-        text-align: center;
-        padding: 20px;
-        width: 150px;
-        height: 150px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-    .profile-card:hover {
-        border-color: #007bff;
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .profile-card h3 { margin: 0; }
-    .profile-card p { color: #666; }
-</style>
-
-<div class="profile-selector">
-    <h1>Who are you shopping for today?</h1>
-    <p>Select a profile to see personalized recommendations.</p>
-    <div class="profile-grid">
+<div class="max-w-5xl mx-auto text-center">
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-4">Who are you shopping for today?</h1>
+    <p class="text-[var(--gray)] mb-6">Select a profile to see personalized recommendations.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for profile in profiles %}
-            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}" class="profile-card">
-                <h3>{{ profile.name }}</h3>
-                <p>{{ profile.relationship }}</p>
+            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+                <h3 class="text-lg font-semibold text-[var(--gray)]">{{ profile.name }}</h3>
+                <p class="text-[var(--gray)]">{{ profile.relationship }}</p>
             </a>
         {% endfor %}
-        <a href="{{ url_for('customer.my_profiles') }}" class="profile-card" style="background-color: #f8f9fa;">
-            <h3>+</h3>
-            <p>Manage Profiles</p>
+        <a href="{{ url_for('customer.my_profiles') }}" class="bg-[var(--light-gray)] p-6 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
+            <h3 class="text-lg font-semibold text-[var(--gray)]">+</h3>
+            <p class="text-[var(--gray)]">Manage Profiles</p>
         </a>
     </div>
 </div>

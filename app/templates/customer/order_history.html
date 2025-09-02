@@ -1,59 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Order History</title>
-    <style>
-        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; color: #333; }
-        .header { border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-        .order-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .order-table th, .order-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        .order-table th { background-color: #f8f9fa; }
-        .order-table tr:hover { background-color: #f1f1f1; }
-        .details-link { text-decoration: none; color: #007bff; font-weight: bold; }
-        .back-link { text-decoration: none; color: #007bff; }
-    </style>
-</head>
 {% extends "customer/base.html" %}
-{% block title %}Order Options{% endblock %}
-
+{% block title %}Order History{% endblock %}
 {% block customer_content %}
-<body>
-
-    <div class="header">
-        <a href="{{ url_for('customer.dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
-        <h1 style="text-align: center; margin-top: 10px;">Your Order History</h1>
+<div class="max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-[var(--primary)]">Your Order History</h1>
+        <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline">&larr; Back to Dashboard</a>
     </div>
 
     {% if orders %}
-        <table class="order-table">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Date Placed</th>
-                    <th>Status</th>
-                    <th>Total Amount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
+        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-[var(--light-gray)]">
                     <tr>
-                        <td>#{{ order.id }}</td>
-                        <td>{{ order.created_at.strftime('%d-%b-%Y') }}</td>
-                        <td>{{ order.order_status.replace('_', ' ')|title }}</td>
-                        <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
-                        <td>
-                            <a href="{{ url_for('customer.order_details', order_id=order.id) }}" class="details-link">View Details</a>
-                        </td>
+                        <th class="p-4 text-left text-[var(--gray)]">Order ID</th>
+                        <th class="p-4 text-left text-[var(--gray)]">Date Placed</th>
+                        <th class="p-4 text-left text-[var(--gray)]">Status</th>
+                        <th class="p-4 text-left text-[var(--gray)]">Total Amount</th>
+                        <th class="p-4 text-left text-[var(--gray)]">Action</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr class="border-b hover:bg-[var(--light-gray)]">
+                            <td class="p-4 text-[var(--gray)]">#{{ order.id }}</td>
+                            <td class="p-4 text-[var(--gray)]">{{ order.created_at.strftime('%d-%b-%Y') }}</td>
+                            <td class="p-4 text-[var(--gray)]">{{ order.order_status.replace('_', ' ')|title }}</td>
+                            <td class="p-4 text-[var(--gray)]">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                            <td class="p-4">
+                                <a href="{{ url_for('customer.order_details', order_id=order.id) }}" class="text-[var(--secondary)] hover:underline font-semibold">View Details</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
-        <p>You have not placed any orders yet.</p>
+        <p class="text-[var(--gray)]">You have not placed any orders yet.</p>
     {% endif %}
-    {% endblock %}
-</body>
-</html>
+{% endblock %}

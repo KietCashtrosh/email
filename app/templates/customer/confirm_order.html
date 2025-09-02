@@ -1,42 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Confirm Your Order</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
-        .summary { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-        .payment-options { margin-top: 30px; }
-        .option { border: 1px solid #ccc; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
-        .button { width: 100%; padding: 12px; font-size: 16px; background-color: #28a745; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <h1>Final Confirmation & Payment</h1>
-    <p>Please review your order and select a payment option.</p>
-
-    <div class="summary">
-        <h3>Order Summary</h3>
-        <p><strong>Service:</strong> {{ order.items[0].tailor_service.service.name }}</p>
-        <p><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+{% extends "customer/base.html" %}
+{% block title %}Order Confirmation{% endblock %}
+{% block customer_content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">Order Confirmation</h1>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold text-[var(--gray)] mb-4">Thank You for Your Order!</h2>
+        <p class="text-[var(--gray)] mb-4">Your order has been successfully placed. You'll receive a confirmation soon.</p>
+        <div class="bg-[var(--light-gray)] p-4 rounded-lg">
+            <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">Order Details</h3>
+            <p><strong>Order ID:</strong> {{ order.id }}</p>
+            <p><strong>Delivery Address:</strong> {{ order.address.address_line1 }}, {{ order.address.city }}, {{ order.address.state }} - {{ order.address.postal_code }}</p>
+            <p><strong>Measurement Method:</strong> {{ order.measurement_method | capitalize }}</p>
+            <p><strong>Payment Method:</strong> {{ order.payment_method | capitalize }}</p>
+            <hr class="my-4">
+            <h4 class="text-lg font-semibold text-[var(--gray)]">Items</h4>
+            {% for item in order.items %}
+                <p class="flex justify-between text-[var(--gray)]">
+                    <span>{{ item.tailor_service.service.name }}</span>
+                    <span>₹{{ "%.2f"|format(item.tailor_service.price) }}</span>
+                </p>
+            {% endfor %}
+            <hr class="my-4">
+            <p class="flex justify-between text-[var(--gray)]">
+                <span><strong>Total:</strong></span>
+                <span>₹{{ "%.2f"|format(order.total) }}</span>
+            </p>
+        </div>
+        <a href="{{ url_for('customer.order_history') }}" class="btn-primary px-4 py-2 rounded mt-6 inline-block">View Order History</a>
     </div>
-
-    <form method="POST" class="payment-options">
-        <h3>Select Payment Method</h3>
-        <div class="option">
-            <input type="radio" id="pay_cod" name="payment_option" value="cod" checked>
-            <label for="pay_cod"><strong>Pay on Delivery / Visit</strong><br><small>Pay the full amount in cash when our partner arrives.</small></label>
-        </div>
-        <div class="option">
-            <input type="radio" id="pay_advance" name="payment_option" value="advance">
-            <label for="pay_advance"><strong>Pay 30% Advance Now</strong> (₹{{ "%.2f"|format(order.total_amount * 0.3) }})<br><small>Pay the rest upon delivery.</small></label>
-        </div>
-        <div class="option">
-            <input type="radio" id="pay_full" name="payment_option" value="full">
-            <label for="pay_full"><strong>Pay Now (Full Amount)</strong><br><small>Complete the full payment online.</small></label>
-        </div>
-
-        <button type="submit" class="button">Confirm & Proceed</button>
-    </form>
-</body>
-</html>
+</div>
+{% endblock %}

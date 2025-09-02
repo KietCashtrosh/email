@@ -1,32 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Tailors for {{ service.name }}</title>
-    <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
-        .tailor-list { list-style: none; padding: 0; }
-        .tailor-item { border: 1px solid #eee; padding: 15px; margin-top: 15px; border-radius: 8px; }
-    </style>
-</head>
-<body>
-    {% extends "customer/base.html" %}
-    {% block customer_content %}
-    <a href="{{ url_for('customer.dashboard') }}">&larr; Back to Dashboard</a>
-    <h1>Showing Tailors for: {{ service.name }}</h1>
-    
-    <div class="tailor-list">
+{% extends "customer/base.html" %}
+{% block title %}Tailors for {{ service.name }}{% endblock %}
+{% block customer_content %}
+<div class="max-w-5xl mx-auto">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Dashboard</a>
+    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">Showing Tailors for: {{ service.name }}</h1>
+    <div class="space-y-4">
         {% if tailors %}
             {% for tailor in tailors %}
-                <div class="tailor-item">
-                    <h3>{{ tailor.tailor_profile.business_name or (tailor.profile.first_name + ' ' + tailor.profile.last_name) }}</h3>
-                    <a href="{{ url_for('customer.tailor_profile', tailor_id=tailor.id) }}">View Profile & Services</a>
+                <div class="bg-white p-6 rounded-lg shadow-md border-2 border-[var(--light-gray)] hover:border-[var(--primary)] transition-all duration-300">
+                    <h3 class="text-lg font-semibold text-[var(--gray)] mb-2">{{ tailor.tailor_profile.business_name or (tailor.profile.first_name + ' ' + tailor.profile.last_name) }}</h3>
+                    <a href="{{ url_for('customer.tailor_profile', tailor_id=tailor.id) }}" class="text-[var(--secondary)] hover:underline">View Profile & Services</a>
                 </div>
             {% endfor %}
         {% else %}
-            <p>Sorry, no tailors are currently offering this service.</p>
+            <p class="text-[var(--gray)]">Sorry, no tailors are currently offering this service.</p>
         {% endif %}
     </div>
-    {% endblock %}
-</body>
-</html>
+</div>
+{% endblock %}
