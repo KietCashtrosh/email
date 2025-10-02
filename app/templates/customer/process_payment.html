@@ -1,22 +1,126 @@
 {% extends "customer/base.html" %}
 {% block title %}Process Payment{% endblock %}
 {% block customer_content %}
-<div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
-    <h1 class="text-2xl font-bold text-center">Final Step: Payment</h1>
-    <p class="text-center text-gray-500">Your order is ready. Select a payment method to complete the process.</p>
-    <form method="POST">
+<style>
+    .option-card {
+        border: 2px solid #e5e7eb;
+        transition: border-color 0.2s;
+    }
+    input[type="radio"]:checked + label {
+        border-color: #7030a0;
+        box-shadow: 0 0 0 2px #7030a0;
+    }
+    #payment-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 2000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    .spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #7030a0;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border-t-4 border-purple-500">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-800">Final Step: Payment</h1>
+        <p class="text-gray-500 mt-2">Select a payment method to complete your order.</p>
+    </div>
+
+    <div class="my-6 text-center">
+        <span class="text-gray-600">Order Total:</span>
+        <strong class="text-2xl font-bold text-purple-700 ml-2">₹{{ "%.2f"|format(order_total) }}</strong>
+    </div>
+
+    <form id="payment-form" method="POST">
         {{ form.hidden_tag() }}
         <div class="space-y-4 mt-6">
-            {% for subfield in form.payment_option %}
             <div class="relative">
-                {{ subfield(class="sr-only") }}
-                <label for="{{ subfield.id }}" class="option-card block p-4 rounded-lg cursor-pointer">
-                    <strong>{{ subfield.label.text }}</strong>
+                <input type="radio" name="payment_option" value="cod" id="pay_cod" class="sr-only" aria-labelledby="pay_cod_label">
+                <label for="pay_cod" id="pay_cod_label" class="option-card block p-4 rounded-lg cursor-pointer">
+                    <strong>Pay on Delivery / Visit</strong><br>
+                    <span class="text-gray-500">Pay the full amount in cash.</span>
                 </label>
             </div>
-            {% endfor %}
+            <div class="relative">
+                <input type="radio" name="payment_option" value="advance" id="pay_advance" class="sr-only" aria-labelledby="pay_advance_label">
+                <label for="pay_advance" id="pay_advance_label" class="option-card block p-4 rounded-lg cursor-pointer">
+                    <strong>Pay 40% Advance Now</strong><br>
+                    <span class="text-gray-500">Pay ₹{{ "%.2f"|format(order_total * 0.4) }} online now.</span>
+                </label>
+            </div>
+            <div class="relative">
+                <input type="radio" name="payment_option" value="full" id="pay_full" class="sr-only" aria-labelledby="pay_full_label">
+                <label for="pay_full" id="pay_full_label" class="option-card block p-4 rounded-lg cursor-pointer">
+                    <strong>Pay Full Amount Now</strong><br>
+                    <span class="text-gray-500">Complete the full payment of ₹{{ "%.2f"|format(order_total) }} online.</span>
+                </label>
+            </div>
         </div>
-        {{ form.submit(class="w-full mt-6 bg-gradient-to-r from-purple-600 to-orange-500 ...") }}
+        
+        {{ form.submit(id="submit-btn", class="w-full mt-6 bg-gradient-to-r from-purple-600 to-orange-500 text-white font-bold py-3 px-4 rounded-lg") }}
     </form>
 </div>
+<div id="payment-overlay" aria-live="polite">
+    <div class="spinner"></div>
+    <p class="mt-4 font-semibold text-lg">Processing Payment...</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentForm = document.getElementById('payment-form');
+    const overlay = document.getElementById('payment-overlay');
+    const submitBtn = document.getElementById('submit-btn');
+
+    paymentForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const selectedOption = document.querySelector('input[name="payment_option"]:checked');
+        if (!selectedOption) {
+            alert('Please select a payment option.');
+            return;
+        }
+        submitBtn.disabled = true;
+        overlay.style.display = 'flex';
+
+        try {
+            const formData = new FormData(paymentForm);
+            const response = await fetch(paymentForm.action, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                window.location = response.url; // Redirect to the server's response URL
+            } else {
+                overlay.style.display = 'none';
+                submitBtn.disabled = false;
+                alert('Payment processing failed. Please try again.');
+            }
+        } catch (error) {
+            overlay.style.display = 'none';
+            submitBtn.disabled = false;
+            alert('An error occurred. Please try again.');
+        }
+    });
+});
+</script>
 {% endblock %}

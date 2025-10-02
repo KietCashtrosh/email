@@ -54,9 +54,16 @@ class AddressForm(FlaskForm):
 
 class OrderForm(FlaskForm):
     """Form for placing a new order."""
-    measurement_method = SelectField('Measurement Method', choices=[('online_submission', 'Online Submission'), ('home_visit', 'Home Visit')], validators=[DataRequired()])
-    # payment_method = SelectField('Payment Method', choices=[('cash_on_delivery', 'Cash on Delivery'), ('online_advance', 'Online Advance'), ('online_full', 'Online Full')], validators=[DataRequired()])
-    delivery_address_id = SelectField('Delivery Address', coerce=int, validators=[DataRequired()])
+    # measurement_method = SelectField('Measurement Method', choices=[('online_submission', 'Online Submission'), ('home_visit', 'Home Visit')], validators=[DataRequired()])
+    # # payment_method = SelectField('Payment Method', choices=[('cash_on_delivery', 'Cash on Delivery'), ('online_advance', 'Online Advance'), ('online_full', 'Online Full')], validators=[DataRequired()])
+    # delivery_address_id = SelectField('Delivery Address', coerce=int, validators=[DataRequired()])
+    delivery_address_id = RadioField('Delivery Address', coerce=int, validators=[DataRequired()])
+    
+    # CHANGE this from SelectField to RadioField
+    measurement_method = RadioField('Measurement Method', 
+                                    choices=[('online_submission', 'Enter/Review Measurements Online'), 
+                                             ('home_visit', 'Request a Home Visit')], 
+                                    validators=[DataRequired()])
     submit = SubmitField('Place Order')
 
 class MeasurementForm(FlaskForm):
