@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stitchie — Fashion at your Doorstep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #fffafc;
+      --accent: #7030a0ff;   /* NEW purple */
+      --accent-2: #fe7b48ff; /* NEW orange */
+      --muted: #6b6b7a;
+      --card: #ffffff;
+      --glass: rgba(255,255,255,0.7);
+      --radius: 16px;
+      --shadow: 0 6px 30px rgba(30,20,60,0.08);
+      --purple-grad: linear-gradient(135deg,#7030a0ff 0%, #9a58d1 50%, #fe7b48ff 100%);
+      --mobile-pad: 4vw; /* New variable for consistent mobile padding */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background:linear-gradient(180deg,#fff 0%, #fff7fb 40%);
+      color:#111; -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale; line-height:1.45;
+    }
+    /* Default Desktop Header */
+    header{display:flex;align-items:center;justify-content:space-between;padding:28px 6vw}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand img{height:36px; display:block; object-fit:contain}
+
+    nav{display:flex;gap:18px;align-items:center}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600}
+    .cta{display:flex;gap:10px}
+    .btn{padding:10px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:700; white-space: nowrap;}
+    .btn.outline{background:transparent;border:2px solid rgba(112,48,160,0.12);color:var(--accent)}
+    .btn.primary{background:var(--accent);color:#fff;box-shadow:0 8px 30px rgba(112,48,160,0.18)}
+    .btn.primary:hover{background:var(--accent-2)}
+
+    /* Hero (Desktop) */
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:stretch;padding:36px 6vw}
+    .hero > div {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hero-image-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .hero-image-container img{
+      max-width:100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    /* Launching Banner */
+    .launching-banner {
+      background: var(--purple-grad);
+      color: #fff;
+      text-align: center;
+      padding: 10px 6vw;
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 20px;
+      animation: slideIn 1s ease-out forwards;
+      box-shadow: var(--shadow);
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Survey Card */
+    .survey-card {
+        background: rgba(112,48,160,0.05);
+        border-left: 4px solid var(--accent);
+        padding: 12px 18px;
+        border-radius: 0 10px 10px 0;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+    .survey-card a {
+        color: var(--accent);
+        font-weight: 700;
+        text-decoration: none;
+        margin-left: 4px;
+    }
+
+    h1{font-family:Poppins, Inter; font-size:48px;margin:10px 0 8px}
+    p.lead{color:var(--muted);max-width:650px}
+    .hero-cta{display:flex;gap:12px}
+
+    /* Stats */
+    .stats{display:flex;gap:18px;justify-content: space-between; color:var(--muted);font-weight:700}
+    
+    /* Global Section Styling */
+    .section{padding:48px 6vw}
+    .services{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+    .service {
+        background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,252,0.9));
+        border-radius:14px;
+        padding:18px;
+        text-align:center;
+        box-shadow:0 6px 20px rgba(20,20,30,0.04);
+        display: flex; /* Enable flexbox for vertical centering */
+        flex-direction: column; /* Stack children vertically */
+        align-items: center; /* Center children horizontally */
+    }
+    .service h4{margin:12px 0 6px}
+    .service p{color:var(--muted);font-size:14px}
+
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:22px}
+    .step{
+        background:var(--card);
+        padding:18px;
+        border-radius:12px;
+        box-shadow:var(--shadow);
+        /* New: Align content in step vertically */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Center horizontally */
+        text-align: center;
+    }
+    .step .num {
+        background: var(--accent-2);
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+
+    /* Form Styling */
+    form.waitlist{display:flex;flex-direction:column;gap:12px}
+    input,select{
+        padding:14px; 
+        border-radius:12px; 
+        border:1px solid #ccc; 
+        font-size:15px;
+        color: #333;
+    }
+    input::placeholder {
+        color: var(--muted);
+    }
+    .form-group-horizontal {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Footer */
+    footer{background:#0f1724;color:#d8e0ff;padding:28px 6vw;margin-top:60px}
+
+
+    /* === Mobile Screen Media Queries === */
+    @media (max-width:1000px){
+      .hero, .split, .partner-grid{grid-template-columns:1fr}
+      .hero > div { display: block; gap: 0; }
+      .hero-image-container { order: -1; margin-bottom: 20px; }
+      .services{grid-template-columns:repeat(2,1fr)}
+      .steps{grid-template-columns:repeat(2,1fr)}
+      header{padding:18px 4vw;} 
+      h1{font-size:38px; margin-top: 0;}
+    }
+
+    @media (max-width:600px){
+      /* Full-width utilization & Consistent Padding */
+      header, .launching-banner, .hero, .section, footer{
+          padding-left: var(--mobile-pad);
+          padding-right: var(--mobile-pad);
+      }
+      .section{padding-top: 30px; padding-bottom: 30px;}
+      .hero{padding-top: 20px; padding-bottom: 20px; gap: 15px;}
+      
+      /* CRITICAL HEADER CTA OVERLAP FIX */
+      header{
+        padding-top: 15px;
+        padding-bottom: 15px;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand{width: 100%; justify-content: center;}
+      .cta{
+        width: 100%; 
+        justify-content: space-between;
+      }
+      .cta .btn {
+          padding: 8px 12px; 
+          font-size: 13px;
+          flex-grow: 1;
+          text-align: center;
+      }
+
+      .services{grid-template-columns:1fr}
+      nav{display:none} 
+      
+      /* Typography & Heading Fix */
+      .launching-banner { font-size: 16px; margin-bottom: 10px; }
+      h1{font-size: 30px; line-height: 1.2; margin-bottom: 5px;}
+      p.lead {margin-top: 0; margin-bottom: 15px;}
+
+      /* Hero Content Stacking Fixes */
+      .hero-image-container { padding: 0; border-radius: 12px; }
+      .hero-cta{ flex-direction: column; margin-top: 0; }
+      .hero-cta .btn { width: 100%; margin-bottom: 10px; }
+
+      /* Survey Card Fix */
+      .survey-card { padding: 10px 15px; margin-top: 15px; margin-bottom: 15px; font-size: 13px; border-radius: 10px; }
+      
+      /* Tailor Form Misalignment Fix (Vertical Stack) */
+      .form-group-horizontal {
+          flex-direction: column; 
+          gap: 10px;
+      }
+      .form-group-horizontal input {
+          width: 100%; 
+      }
+      
+      /* Footer Alignment Fix */
+      footer > div:first-child {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+      }
+      .cols {
+          flex-direction: column;
+          align-items: center;
+          gap: 20px !important; 
+      }
+      .cols > div {
+          text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+  <div class="brand">
+    <img src="Logowithtagline.png" alt="Stitchie Logo">
+  </div>
+  <nav>
+    <a href="#services">Services</a>
+    <a href="#how">How it Works</a>
+    <a href="#customers">For Customers</a>
+    <a href="#tailors">For Tailors</a>
+  </nav>
+  <div class="cta">
+    <button class="btn outline">Join as Tailor</button>
+    <button class="btn primary">Join Waitlist</button>
+    <a href="{{ url_for('auth.login') }}" class="btn primary">Login</a>
+  </div>
+</header>
+
+  <main>
+    <div class="launching-banner">Launching soon in Hyderabad</div>
+
+    <section class="hero">
+      <div>
+        <h1><span style="color:var(--accent)">Fashion at your <span style="color:var(--accent-2)">Doorstep</span></h1>
+        <p class="lead">Your one-stop fashion-tech platform for custom stitching, alterations, and clothing maintenance — all at your doorstep.</p>
+        
+        <div class="survey-card">
+            <strong>Help us shape Stitchie</strong>
+            <p style="margin: 4px 0 0; color: var(--muted);">Take a short survey — your feedback helps us design the perfect tailoring marketplace.
+            <a href="https://forms.gle/EyVfDzXTnq5hK3Rd6" target="_blank" rel="noopener noreferrer">Fill the survey here &rarr;</a>
+            </p>
+        </div>
+        <div class="hero-cta">
+          <button class="btn primary">Join Waitlist - Customers</button>
+          <button class="btn outline">Join as Tailor</button>
+        </div>
+        <div class="stats" aria-hidden>
+          <div>500+<br><span style="font-size:12px;color:var(--muted)">Verified Tailors</span></div>
+          <div>10,000+<br><span style="font-size:12px;color:var(--muted)">Happy Customers</span></div>
+          <div>50,000+<br><span style="font-size:12px;color:var(--muted)">Orders Completed</span></div>
+          <div>24hrs<br><span style="font-size:12px;color:var(--muted)">Average Delivery</span></div>
+        </div>
+      </div>
+
+      <aside class="hero-image-container">
+        <img src="Stitchie Workflow Diagram.png" alt="Stitchie Workflow Diagram">
+      </aside>
+    </section>
+
+    <section id="services" class="section">
+      <h2 style="text-align:center;font-family:Poppins">Our Services</h2>
+      <p style="text-align:center;color:var(--muted)">From custom stitching to alterations, we connect you with skilled professionals for all your fashion needs</p>
+      <div class="services" style="margin-top:22px">
+        <div class="service">
+          <div style="font-size:28px">✂️</div>
+          <h4>Custom Stitching</h4>
+          <p>Get your dream outfits stitched by verified local tailors with doorstep pickup and delivery.</p>
+        </div>
+        <div class="service">
+          <div style="font-size:28px">🧵</div>
+          <h4>Alterations &amp; Repairs</h4>
+          <p>Professional alterations and clothing repairs done with precision and care.</p>
+        </div>
+        <div class="service">
+          <div style="font-size:28px">🧼</div>
+          <h4>Clothing Maintenance</h4>
+          <p>Premium laundry and garment care services to keep your clothes looking fresh.</p>
+        </div>
+        <div class="service">
+          <div style="font-size:28px">👑</div>
+          <h4>Festive &amp; Wedding Wear</h4>
+          <p>Specialized services for ethnic wear, party outfits, and wedding collections.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section">
+      <h3 style="text-align:center;font-family:Poppins">How It Works</h3>
+      <p style="text-align:center;color:var(--muted)">Simple steps to get started with Stitchie - whether you're a customer or a tailor</p>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h4>Browse & Select</h4><p style="color:var(--muted)">Browse verified tailors by category, style, and ratings.</p></div>
+        <div class="step"><div class="num">2</div><h4>Book Service</h4><p style="color:var(--muted)">Schedule your service and choose pickup time.</p></div>
+        <div class="step"><div class="num">3</div><h4>Doorstep Pickup</h4><p style="color:var(--muted)">Our agents collect your fabric and measurements at home.</p></div>
+        <div class="step"><div class="num">4</div><h4>Get Delivered</h4><p style="color:var(--muted)">Track progress and receive your perfect outfit at your doorstep.</p></div>
+      </div>
+    </section>
+
+    <section id="customers" class="section">
+      <div class="split">
+        <div>
+          <h3 style="font-family:Poppins">Fashion Made Personal</h3>
+          <p style="color:var(--muted)">Experience the convenience of doorstep tailoring services with verified professionals, quality assurance, and timely delivery.</p>
+          <ul class="benefits" style="margin-top:18px">
+            <li>Doorstep pickup and delivery service</li>
+            <li>Verified and rated tailors &amp; boutiques</li>
+            <li>Quality guaranteed with timely delivery</li>
+            <li>COD and digital payment options</li>
+            <li>Real-time order tracking</li>
+            <li>Affordable and premium pricing options</li>
+          </ul>
+
+          <div style="margin-top:18px" class="card">
+            <strong style="color:#111">"Amazing service! Got my wedding lehenga stitched perfectly."</strong>
+            <div style="margin-top:8px;color:var(--muted)">— Priya Sharma, Customer</div>
+          </div>
+        </div>
+
+        <aside class="card">
+          <h4 style="margin:0 0 6px">Join Our Waitlist</h4>
+          <p style="color:var(--muted);margin:0 0 12px">Be the first to experience Stitchie when we launch in Hyderabad</p>
+          <form class="waitlist" id="waitlistForm">
+            <input type="email" id="email" placeholder="Email Address" required>
+            <input type="tel" id="phone" placeholder="Phone Number" required>
+            <button class="btn primary full" type="submit">Join Waitlist</button>
+            <div id="waitMsg" style="font-size:13px;color:green;display:none">Thanks — we'll notify you when we launch.</div>
+          </form>
+        </aside>
+      </div>
+    </section>
+
+    <section id="tailors" class="section">

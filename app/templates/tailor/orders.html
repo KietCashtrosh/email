@@ -3,27 +3,71 @@
 
 {% block tailor_content %}
 <style>
-    .page-header h1 { margin-top: 0; }
-    .order-table { 
-        width: 100%; 
-        border-collapse: collapse; 
+    .page-header h1 {
+        margin-top: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
         background: #fff;
-        margin-top: 20px;
+        margin-top: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-    .order-table th, .order-table td { 
-        border-bottom: 1px solid #ddd; 
-        padding: 12px; 
-        text-align: left; 
+    .order-table th, .order-table td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0.75rem;
+        text-align: left;
     }
-    .order-table th { background-color: #f8f9fa; }
+    .order-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #374151;
+    }
+    .order-table td {
+        color: #4b5563;
+    }
     .action-btn {
         background-color: #28a745;
         color: white;
         border: none;
-        padding: 8px 12px;
-        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 600;
+        transition: background-color 0.2s ease;
+    }
+    .action-btn:hover {
+        background-color: #218838;
+    }
+    .action-btn.finish {
+        background-color: #007bff;
+    }
+    .action-btn.finish:hover {
+        background-color: #0056b3;
+    }
+    .order-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .order-link:hover {
+        text-decoration: underline;
+    }
+    .section-header {
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .no-data {
+        text-align: center;
+        color: #6b7280;
+        padding: 2rem 0;
     }
 </style>
 
@@ -31,67 +75,94 @@
     <h1>My Orders</h1>
 </div>
 
-<h2>New Orders (Awaiting Acceptance)</h2>
+<div class="section-header">New Orders (Awaiting Acceptance)</div>
 <table class="order-table">
-    <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Date Placed</th><th>Action</th></tr></thead>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Service</th>
+            <th>Date Placed</th>
+            <th>Action</th>
+        </tr>
+    </thead>
     <tbody>
         {% for order in new_orders %}
         <tr>
-            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}" class="order-link">#{{ order.id }}</a></td>
             <td>{{ order.customer.profile.first_name }}</td>
             <td>{{ order.items[0].tailor_service.service.name }}</td>
-            <td>{{ order.created_at.strftime('%d-%b-%Y') }}</td>
+            <td>{{ order.created_at.strftime('%d %b %Y') }}</td>
             <td>
                 <form method="POST" action="{{ url_for('tailor.accept_order', order_id=order.id) }}">
+                    {{ form.hidden_tag() }}
                     <button type="submit" class="action-btn">Accept</button>
                 </form>
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="5" style="text-align: center;">No new orders.</td></tr>
+        <tr><td colspan="5" class="no-data">No new orders.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 
-<h2 style="margin-top: 40px;">Active Orders</h2>
+<div class="section-header">Active Orders</div>
 <table class="order-table">
-    <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th><th>Action</th></tr></thead>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
     <tbody>
         {% for order in active_orders %}
         <tr>
-            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}" class="order-link">#{{ order.id }}</a></td>
             <td>{{ order.customer.profile.first_name }}</td>
             <td>{{ order.items[0].tailor_service.service.name }}</td>
             <td>{{ order.order_status.replace('_', ' ')|title }}</td>
             <td>
                 {% if order.order_status == 'in_progress' %}
                     <form method="POST" action="{{ url_for('tailor.complete_order', order_id=order.id) }}">
-                        <button type="submit" class="action-btn" style="background-color: #007bff;">Mark as Finished</button>
+                        {{ form.hidden_tag() }}
+                        <button type="submit" class="action-btn finish">Mark as Finished</button>
                     </form>
                 {% else %}
-                    <small>Awaiting Fabric</small>
+                    <span class="text-gray-500">Awaiting Fabric</span>
                 {% endif %}
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="5" style="text-align: center;">No active orders.</td></tr>
+        <tr><td colspan="5" class="no-data">No active orders.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 
-<h2 style="margin-top: 40px;">Completed Orders</h2>
+<div class="section-header">Completed Orders</div>
 <table class="order-table">
-     <thead><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th></tr></thead>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
     <tbody>
         {% for order in completed_orders %}
         <tr>
-            <td>#{{ order.id }}</td>
+            <td><a href="{{ url_for('tailor.order_details', order_id=order.id) }}" class="order-link">#{{ order.id }}</a></td>
             <td>{{ order.customer.profile.first_name }}</td>
             <td>{{ order.items[0].tailor_service.service.name }}</td>
             <td>{{ order.order_status.replace('_', ' ')|title }}</td>
+            <td>-</td>
         </tr>
         {% else %}
-        <tr><td colspan="4" style="text-align: center;">No completed orders.</td></tr>
+        <tr><td colspan="5" class="no-data">No completed orders.</td></tr>
         {% endfor %}
     </tbody>
 </table>

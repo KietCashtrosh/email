@@ -1,70 +1,87 @@
 {% extends "auth/base.html" %}
-{% block title %}Register - Tailoring Services{% endblock %}
+{% block title %}Create Account{% endblock %}
+
 {% block auth_content %}
-<div class="min-h-screen flex items-center justify-center bg-[var(--light-gray)] py-10">
-    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md border-2 border-[var(--light-gray)]">
-        <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-4">Create an Account</h1>
-        <p class="text-[var(--gray)] text-center mb-6">Sign up to start tailoring!</p>
-        <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-6">
-            {{ form.hidden_tag() }}
-            <div>
-                <label for="{{ form.role.id }}" class="block text-[var(--gray)] font-semibold mb-2">Role</label>
-                {{ form.role(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
-                {% for error in form.role.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div>
-                <label for="{{ form.phone_number.id }}" class="block text-[var(--gray)] font-semibold mb-2">Phone Number</label>
-                {{ form.phone_number(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
-                {% for error in form.phone_number.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div>
-                <label for="{{ form.email.id }}" class="block text-[var(--gray)] font-semibold mb-2">Email</label>
-                {{ form.email(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
-                {% for error in form.email.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div class="relative">
-                <label for="{{ form.password.id }}" class="block text-[var(--gray)] font-semibold mb-2">Password</label>
-                {{ form.password(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", id="password", required=true) }}
-                <button type="button" id="password-toggle" class="absolute right-3 top-10 text-[var(--gray)] focus:outline-none">Show</button>
-                {% for error in form.password.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div>
-                <label for="{{ form.first_name.id }}" class="block text-[var(--gray)] font-semibold mb-2">First Name</label>
-                {{ form.first_name(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
-                {% for error in form.first_name.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            <div>
-                <label for="{{ form.last_name.id }}" class="block text-[var(--gray)] font-semibold mb-2">Last Name</label>
-                {{ form.last_name(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
-                {% for error in form.last_name.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            {{ form.submit(class="btn-primary w-full p-3 rounded-lg text-white hover:bg-[var(--primary)]/90 transition-all duration-200") }}
-        </form>
-        <p class="text-[var(--gray)] text-center mt-6">
-            Already have an account? <a href="{{ url_for('auth.login') }}" class="text-[var(--secondary)] hover:underline">Login here</a>
+<div class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600 w-full max-w-lg">
+    <div>
+        <h2 class="text-center text-3xl font-extrabold text-gray-900">
+            Create a New Account
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Join the Stichie community!
         </p>
     </div>
+
+    <form method="POST" class="mt-8 space-y-6">
+        {{ form.hidden_tag() }}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-user text-gray-400"></i>
+                </div>
+                {{ form.first_name(class="w-full pl-10 p-3 border border-gray-300 rounded-lg", placeholder="First Name") }}
+            </div>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-user text-gray-400"></i>
+                </div>
+                {{ form.last_name(class="w-full pl-10 p-3 border border-gray-300 rounded-lg", placeholder="Last Name") }}
+            </div>
+        </div>
+
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-envelope text-gray-400"></i>
+            </div>
+            {{ form.email(class="w-full pl-10 p-3 border border-gray-300 rounded-lg", placeholder="Email Address") }}
+        </div>
+
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-phone text-gray-400"></i>
+            </div>
+            {{ form.phone_number(class="w-full pl-10 p-3 border border-gray-300 rounded-lg", placeholder="10-Digit Phone Number") }}
+        </div>
+
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-lock text-gray-400"></i>
+            </div>
+            {{ form.password(class="w-full pl-10 p-3 border border-gray-300 rounded-lg", id="password", placeholder="Password") }}
+            <button type="button" id="password-toggle" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
+
+        <div>
+            <label class="block text-gray-700 font-semibold mb-1">I am registering as a:</label>
+            {{ form.role(class="w-full p-3 border border-gray-300 rounded-lg bg-white") }}
+        </div>
+
+        <div>
+            {{ form.submit(class="w-full flex justify-center py-3 px-4 rounded-lg text-white font-bold bg-gradient-to-r from-purple-600 to-orange-500 hover:opacity-90 transition") }}
+        </div>
+    </form>
+    <p class="text-gray-600 text-center text-sm mt-6">
+        Already have an account? 
+        <a href="{{ url_for('auth.login') }}" class="font-medium text-purple-600 hover:text-orange-500">
+            Sign in
+        </a>
+    </p>
 </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const passwordInput = document.getElementById('password');
-        const toggle = document.getElementById('password-toggle');
-        toggle.addEventListener('click', () => {
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            toggle.textContent = type === 'password' ? 'Show' : 'Hide';
+        const toggleButton = document.getElementById('password-toggle');
+        const eyeIcon = toggleButton.querySelector('i');
+
+        toggleButton.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.classList.toggle('fa-eye', !isPassword);
+            eyeIcon.classList.toggle('fa-eye-slash', isPassword);
         });
     });
 </script>

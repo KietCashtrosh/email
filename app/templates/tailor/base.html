@@ -1,49 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Stichie - Tailor{% endblock %}
-{% block navbar %}
+
+{% block body_content %}
 <style>
-    .navbar {
-        background-color: var(--primary);
-        padding: 15px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    :root {
+        --primary: #7030a0; /* Your Purple */
+        --secondary: #fe7b48; /* Your Orange */
+        --background: #f4f5f7;
+        --card-bg: #ffffff;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
     }
-    .navbar a {
-        text-decoration: none;
+    .sidebar { transition: transform 0.3s ease-in-out; }
+    .sidebar-nav a.active {
+        background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
         color: white;
-        margin: 0 15px;
-        font-weight: bold;
-    }
-    .navbar a:hover {
-        color: var(--light-orange);
-    }
-    .page-content {
-        max-width: 1100px;
-        margin: 20px auto;
     }
 </style>
 
-<nav class="navbar">
-    <div class="flex items-center space-x-4">
-        <a href="{{ url_for('tailor.dashboard') }}" class="text-2xl font-bold">Stichie</a>
-        <a href="{{ url_for('tailor.my_services') }}">Services</a>
-        <a href="{{ url_for('tailor.orders') }}">Orders</a>
-        <a href="{{ url_for('tailor.earnings') }}">Earnings</a>
+<div class="flex h-screen bg-gray-100 font-sans">
+    <aside id="sidebar" class="w-64 bg-white shadow-md p-6 fixed h-full z-20 sidebar -translate-x-full md:translate-x-0">
+        <h2 class="text-2xl font-bold text-purple-700 mb-6">Tailor Portal</h2>
+        <nav class="sidebar-nav space-y-2">
+            <a href="{{ url_for('tailor.dashboard') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50">
+                <i class="fas fa-tachometer-alt w-5"></i> Dashboard
+            </a>
+            <a href="{{ url_for('tailor.orders') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50">
+                <i class="fas fa-box w-5"></i> My Orders
+            </a>
+            <a href="{{ url_for('tailor.my_services') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50">
+                <i class="fas fa-cut w-5"></i> My Services
+            </a>
+            <a href="{{ url_for('tailor.earnings') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50">
+                <i class="fas fa-wallet w-5"></i> Earnings
+            </a>
+            <a href="{{ url_for('tailor.profile') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50">
+                <i class="fas fa-user-cog w-5"></i> My Profile
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50">
+                <i class="fas fa-sign-out-alt w-5"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-hidden md:ml-64">
+        <header class="flex justify-between items-center p-4 bg-white shadow-md md:hidden">
+            <button id="menu-toggle" class="text-gray-700">
+                <i class="fas fa-bars fa-lg"></i>
+            </button>
+            <h1 class="text-xl font-bold text-purple-700">Stichie (Tailor)</h1>
+        </header>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            {% block tailor_content %}{% endblock %}
+        </main>
     </div>
-    <div class="flex items-center space-x-4">
-        <a href="{{ url_for('tailor.profile') }}">Profile</a>
-        <div class="notification-bell">
-            <span id="notification-bell">🔔</span>
-            <span id="notification-count" style="display: none;">0</span>
-            <div id="notifications-dropdown" style="display: none;"></div>
-        </div>
-        <a href="{{ url_for('auth.logout') }}" class="btn-secondary px-4 py-2 rounded">Logout</a>
-    </div>
-</nav>
-{% endblock %}
-{% block content %}
-<div class="page-content">
-    {% block tailor_content %}{% endblock %}
 </div>
+
+<script>
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    });
+</script>
 {% endblock %}

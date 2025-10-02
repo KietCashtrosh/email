@@ -49,7 +49,7 @@ def dashboard():
 
     # Fetch tailor's offered services
     my_services = TailorService.query.filter_by(tailor_id=current_user.id).all()
-
+    form = SimpleSubmitForm()
     # Collect order IDs for efficient task querying
     all_order_ids = [o.id for o in new_orders + active_orders + completed_orders]
     tasks_map = {
@@ -65,7 +65,8 @@ def dashboard():
         active_orders=active_orders,
         completed_orders=completed_orders,
         tasks_map=tasks_map,
-        current_year=datetime.now().year
+        current_year=datetime.now().year,
+        form = form
     )
 
 @tailor_bp.route('/earnings')
@@ -233,6 +234,7 @@ def manage_measurements(service_id):
 @tailor_required
 def orders():
     """Display a filterable list of all orders assigned to the tailor."""
+    form = SimpleSubmitForm()
     all_orders = Order.query.filter_by(tailor_id=current_user.id).order_by(Order.created_at.desc()).all()
     new_orders = [o for o in all_orders if o.order_status == 'pending_tailor_acceptance']
     active_orders = [o for o in all_orders if o.order_status in ['awaiting_pickup', 'fabric_in_transit', 'in_progress']]
@@ -242,7 +244,8 @@ def orders():
         new_orders=new_orders,
         active_orders=active_orders,
         completed_orders=completed_orders,
-        current_year=datetime.now().year
+        current_year=datetime.now().year,
+        form = form
     )
 
 @tailor_bp.route('/order/<int:order_id>/details', methods=['GET', 'POST'])
@@ -271,6 +274,7 @@ def order_details(order_id):
 @tailor_required
 def accept_order(order_id):
     """Accept an order and create a pickup task for delivery partners."""
+    # import pdb ; pdb.set_trace()
     form = SimpleSubmitForm()
     if form.validate_on_submit():
         order = Order.query.get_or_404(order_id)
@@ -288,7 +292,7 @@ def accept_order(order_id):
             task_type='pickup_from_customer',
             status='assigned',
             pickup_otp=pickup_otp,
-            tailor_handover_otp=tailor_otp
+            tailor_handover_otp=tailor_otp,
         )
         db.session.add(new_task)
         db.session.commit()
@@ -425,3 +429,28 @@ def profile():
         address=address,
         current_year=datetime.now().year
     )
+
+
+@tailor_bp.route('/order/<int:order_id>/add_note', methods=['POST'])
+@login_required
+def add_note(order_id):
+    order = Order.query.get_or_404(order_id)
+    
+    # Optional: Check if the current_user is allowed to comment on this order
+    # (e.g., is the assigned tailor)
+    
+    note_text = request.form.get('note')
+    if note_text:
+        new_note = Note(
+            note=note_text,
+            order_id=order.id,
+            author_id=current_user.id
+        )
+        db.session.add(new_note)
+        db.session.commit()
+        flash('Your note has been added.', 'success')
+    else:
+        flash('Note cannot be empty.', 'danger')
+        
+    # Redirect back to the same order detail page to see the new note
+    return redirect(url_for('tailor.order_detail', order_id=order.id))

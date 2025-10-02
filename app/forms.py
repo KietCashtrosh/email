@@ -175,3 +175,14 @@ class PaymentForm(FlaskForm):
         validators=[DataRequired()]
     )
     submit = SubmitField('Pay & Confirm Order')
+
+class NoteForm(FlaskForm):
+    """
+    Form for a user to add a note to an order.
+    """
+    note = TextAreaField(
+        'Note', 
+        validators=[DataRequired(message="Note cannot be empty.")],
+        render_kw={"placeholder": "Add a note for the customer or delivery partner..."}
+    )
+    submit = SubmitField('Add Note')
