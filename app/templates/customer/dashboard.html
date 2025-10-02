@@ -52,6 +52,15 @@
         </a>
     </div>
     {% else %}
+    <div class="text-center bg-white p-12 rounded-xl shadow-lg">
+            <i class="fas fa-users fa-3x text-purple-300 mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800">Welcome to Stichie!</h2>
+            <p class="text-gray-600 mt-2 mb-6">Create your first profile to get started.</p>
+            <a href="{{ url_for('customer.my_profiles') }}"
+               class="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-orange-500 text-white font-bold rounded-lg shadow-md hover:opacity-90 transition">
+                Create a Profile
+            </a>
+        </div>
     {% endif %}
 </section>
 {% endblock %}

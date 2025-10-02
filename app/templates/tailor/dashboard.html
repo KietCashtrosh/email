@@ -1,146 +1,174 @@
 {% extends "tailor/base.html" %}
-
 {% block title %}Tailor Dashboard{% endblock %}
 
 {% block tailor_content %}
 <style>
-    .section-header { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        border-bottom: 1px solid #ddd; 
-        padding-bottom: 10px; 
+    /* Tab styles */
+    .tab-link {
+        color: #6b7280;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
     }
-    .button { 
-        background-color: #007bff; 
-        color: white; 
-        padding: 10px 15px; 
-        text-decoration: none; 
-        border-radius: 5px; 
-        font-weight: bold; 
+    .tab-link.active {
+        color: #7030a0;
+        border-bottom-color: #7030a0;
     }
-    .order-grid { 
-        display: grid; 
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
-        gap: 20px; 
-        margin-top: 20px;
+    .tab-link:hover {
+        color: #7030a0;
     }
-    .order-card, .service-item { 
-        background-color: #fff; 
-        border: 1px solid #eee; 
-        padding: 20px; 
-        border-radius: 8px; 
+
+    /* --- NEW: Push the 'Finished' tab to the far right --- */
+    .tab-link[data-tab="completed-orders"] {
+        margin-left: auto;
     }
-    .order-card h3 {
-        margin-top: 0;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
+
+    /* --- NEW: Style for the 'Finished' tab specifically when it's active --- */
+    .tab-link[data-tab="completed-orders"].active {
+        color: #34d399; /* Green to match the cards */
+        border-bottom-color: #34d399;
     }
-    .order-item {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-        margin-bottom: 10px;
+    
+    /* Card styles */
+    .order-card {
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-top: 2rem;
     }
     .status-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        font-size: 0.8em;
-        font-weight: bold;
-        border-radius: 4px;
-        color: white;
-        background-color: #6c757d; /* Default color */
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        background: #f3f4f6;
     }
-    .status-awaiting_pickup { background-color: #ffc107; color: #333; }
-    .status-fabric_in_transit { background-color: #17a2b8; }
-    .status-in_progress { background-color: #007bff; }
-
-    .service-item { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-    .service-actions { display: flex; align-items: center; gap: 10px; }
-    .service-actions form { margin: 0; }
+    .status-in_progress { background: #fef3c7; color: #b45309; }
+    .status-awaiting_pickup { background: #dbeafe; color: #1e40af; }
+    .status-fabric_in_transit { background: #e0e7ff; color: #4338ca; }
+    .status-ready_for_delivery { background: #d1fae5; color: #047857; }
 </style>
 
-<div class="section-header">
-    <h2>Order Management</h2>
-</div>
-<div class="order-grid">
-    <div class="order-card">
-        <h3>New Orders</h3>
-        {% for order in new_orders %}
-            <div class="order-item">
-                <p><strong>Order #{{ order.id }}</strong> for {{ order.items[0].tailor_service.service.name }}</p>
-                <form method="POST" action="{{ url_for('tailor.accept_order', order_id=order.id) }}">
-                    <button type="submit" class="button" style="background-color: #28a745;">Accept Order</button>
-                </form>
-            </div>
-        {% else %}
-            <p>No new orders waiting for acceptance.</p>
-        {% endfor %}
+<div class="space-y-8">
+    <div>
+        <h1 class="text-3xl font-extrabold text-gray-800">Welcome, {{ current_user.profile.first_name }}!</h1>
     </div>
 
     <div class="order-card">
-        <h3>Active Orders</h3>
-        {% for order in active_orders %}
-            <div class="order-item">
-                <p><strong>Order #{{ order.id }}</strong> - <span class="status-badge status-{{order.order_status}}">{{ order.order_status.replace('_', ' ')|title }}</span></p>
-                
-                {% set task = tasks_map.get(order.id) %}
-                {% if order.order_status in ['awaiting_pickup', 'fabric_in_transit'] and task and task.tailor_handover_otp %}
-                    <p style="color: #dc3545;"><strong>Your Handover OTP: {{ task.tailor_handover_otp }}</strong></p>
-                {% endif %}
+        <div class="flex border-b border-gray-200">
+            <button class="tab-link active py-2 px-4 font-semibold border-b-2" data-tab="new-orders">New ({{ new_orders|length }})</button>
+            <button class="tab-link py-2 px-4 font-semibold border-b-2" data-tab="active-orders">Active ({{ active_orders|length }})</button>
+            <button class="tab-link py-2 px-4 font-semibold border-b-2" data-tab="completed-orders">Finished ({{ completed_orders|length }})</button>
+        </div>
 
-                {% if order.order_status == 'in_progress' %}
-                    <form method="POST" action="{{ url_for('tailor.complete_order', order_id=order.id) }}">
-                        <button type="submit">Mark as Finished</button>
-                    </form>
-                {% endif %}
-            </div>
-        {% else %}
-            <p>No orders currently in progress.</p>
-        {% endfor %}
+        <div id="new-orders" class="tab-content active mt-6">
+            {% if new_orders %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for order in new_orders %}
+                    <div class="bg-gray-50 rounded-xl shadow-md flex flex-col border-t-4 border-yellow-400">
+                        <div class="p-5 border-b">
+                            <h4 class="font-bold">Order #{{ order.id }}</h4>
+                            <p class="text-sm text-gray-500">{{ order.created_at.strftime('%d %b %Y') }}</p>
+                        </div>
+                        <div class="p-5 flex-grow">
+                            <p class="font-semibold">{{ order.items[0].tailor_service.service.name }}</p>
+                        </div>
+                        <div class="p-4 bg-gray-100 rounded-b-xl">
+                            <form method="POST" action="{{ url_for('tailor.accept_order', order_id=order.id) }}">
+                                {{ form.hidden_tag() }}
+                                <button type="submit" class="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">
+                                    Accept Order
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-10">No new orders waiting.</p>
+            {% endif %}
+        </div>
+
+        <div id="active-orders" class="tab-content hidden mt-6">
+            {% if active_orders %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for order in active_orders %}
+                    <div class="bg-gray-50 rounded-xl shadow-md flex flex-col border-t-4 border-blue-400">
+                        <div class="p-5 border-b">
+                            <h4 class="font-bold">Order #{{ order.id }}</h4>
+                            <p class="text-sm text-gray-500">{{ order.created_at.strftime('%d %b %Y') }}</p>
+                        </div>
+                        <div class="p-5 flex-grow">
+                            <p class="font-semibold">{{ order.items[0].tailor_service.service.name }}</p>
+                            <p class="mt-2"><span class="status-badge status-{{order.order_status}}">{{ order.order_status.replace('_', ' ')|title }}</span></p>
+                            {% set task = tasks_map.get(order.id) %}
+                            {% if order.order_status in ['awaiting_pickup', 'fabric_in_transit'] and task and task.tailor_handover_otp %}
+                                <p class="text-red-600 font-semibold mt-2">Handover OTP: {{ task.tailor_handover_otp }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="p-4 bg-gray-100 rounded-b-xl">
+                            {% if order.order_status == 'in_progress' %}
+                                <form method="POST" action="{{ url_for('tailor.complete_order', order_id=order.id) }}">
+                                    {{ form.hidden_tag() }}
+                                    <button type="submit" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">
+                                        Mark as Finished
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-10">No orders currently in progress.</p>
+            {% endif %}
+        </div>
+
+        <div id="completed-orders" class="tab-content hidden mt-6">
+            {% if completed_orders %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for order in completed_orders %}
+                    <div class="bg-gray-50 rounded-xl shadow-md flex flex-col border-t-4 border-green-400">
+                        <div class="p-5 border-b">
+                            <h4 class="font-bold">Order #{{ order.id }}</h4>
+                            <p class="text-sm text-gray-500">{{ order.created_at.strftime('%d %b %Y') }}</p>
+                        </div>
+                        <div class="p-5 flex-grow">
+                            <p class="font-semibold">{{ order.items[0].tailor_service.service.name }}</p>
+                            <p class="mt-2"><span class="status-badge status-{{order.order_status}}">{{ order.order_status.replace('_', ' ')|title }}</span></p>
+                            {% set task = tasks_map.get(order.id) %}
+                            {% if order.order_status == 'ready_for_delivery' and task and task.pickup_otp %}
+                                <p class="text-green-600 font-semibold mt-2">Partner Pickup OTP: {{ task.pickup_otp }}</p>
+                                <p class="text-sm text-gray-500">Provide this to the delivery partner when they arrive</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-10">No recently completed orders.</p>
+            {% endif %}
+        </div>
     </div>
-
-    <div class="order-card">
-    <h3>Recently Completed Orders</h3>
-    {% for order in completed_orders %}
-        <div class="order-item">
-             <p><strong>Order #{{ order.id }}</strong> - <span class="status-badge">{{ order.order_status.replace('_', ' ')|title }}</span></p>
-
-             {% if order.order_status == 'ready_for_delivery' %}
-                {% set task = tasks_map.get(order.id) %}
-                {% if task and task.pickup_otp %}
-                    <p style="color: #28a745;"><strong>Partner Pickup OTP: {{ task.pickup_otp }}</strong></p>
-                    <small>(Provide this to the delivery partner when they arrive)</small>
-                {% endif %}
-             {% endif %}
-
-        </div>
-    {% else %}
-        <p>No recently completed orders.</p>
-    {% endfor %}
-</div>
 </div>
 
-<div class="section-header" style="margin-top: 40px;">
-    <h2>Your Offered Services</h2>
-    <a href="{{ url_for('tailor.add_service') }}" class="button">Add New Service</a>
-</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
 
-{% for tailor_service in my_services %}
-    <div class="service-item">
-        <div>
-            <h3>{{ tailor_service.service.name }}</h3>
-            <p><strong>Price:</strong> ₹{{ "%.2f"|format(tailor_service.price) }} | <strong>ETA:</strong> {{ tailor_service.estimated_days }} days</p>
-        </div>
-        <div class="service-actions">
-            <a href="{{ url_for('tailor.manage_measurements', service_id=tailor_service.id) }}">Measurements</a>
-            <a href="{{ url_for('tailor.edit_service', service_id=tailor_service.id) }}">Edit</a>
-            <form method="POST" action="{{ url_for('tailor.delete_service', service_id=tailor_service.id) }}" onsubmit="return confirm('Are you sure?');">
-                <button type="submit" style="background: #dc3545; color: white; border:none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Delete</button>
-            </form>
-        </div>
-    </div>
-{% else %}
-    <p>You have not added any services yet.</p>
-{% endfor %}
-
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.add('hidden'));
+            
+            tab.classList.add('active');
+            const targetContent = document.getElementById(tab.dataset.tab);
+            if (targetContent) {
+                targetContent.classList.remove('hidden');
+                targetContent.classList.add('active');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

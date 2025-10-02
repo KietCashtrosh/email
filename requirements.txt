@@ -6,3 +6,5 @@ Werkzeug
 flask-login
 flask-socketio
 eventlet
+flask-wtf
+email_validator

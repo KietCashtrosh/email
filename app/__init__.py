@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager  # Import LoginManager
@@ -59,7 +59,8 @@ def create_app(config_name='default'):
 
     @app.route('/')
     def index():
-        return "Welcome to the On-Demand Tailoring Service!"
+        # return "Welcome to the On-Demand Tailoring Service!"
+        return render_template('landing_page.html')
 
     return app
 

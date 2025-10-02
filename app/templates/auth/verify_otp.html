@@ -1,24 +1,37 @@
 {% extends "auth/base.html" %}
-{% block title %}Verify OTP - Tailoring Services{% endblock %}
+{% block title %}Verify Your Code{% endblock %}
+
 {% block auth_content %}
-<div class="min-h-screen flex items-center justify-center bg-[var(--light-gray)] py-10">
-    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md border-2 border-[var(--light-gray)]">
-        <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-4">Verify OTP</h1>
-        <p class="text-[var(--gray)] text-center mb-6">Enter the 6-digit OTP sent to your phone number.</p>
-        <form method="POST" action="{{ url_for('auth.verify') }}" class="space-y-6">
-            {{ form.hidden_tag() }}
-            <div>
-                <label for="{{ form.otp.id }}" class="block text-[var(--gray)] font-semibold mb-2">OTP</label>
-                {{ form.otp(class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]", required=true) }}
-                {% for error in form.otp.errors %}
-                    <span class="text-red-500 text-sm mt-1 block">{{ error }}</span>
-                {% endfor %}
-            </div>
-            {{ form.submit(class="btn-primary w-full p-3 rounded-lg text-white hover:bg-[var(--primary)]/90 transition-all duration-200") }}
-        </form>
-        <p class="text-[var(--gray)] text-center mt-6">
-            Didn't receive an OTP? <a href="{{ url_for('auth.resend_otp') }}" class="text-[var(--secondary)] hover:underline">Resend OTP</a> or <a href="{{ url_for('auth.login') }}" class="text-[var(--secondary)] hover:underline">Try again</a>
+<div class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-purple-600 w-full max-w-md text-center">
+    <div>
+        <h2 class="text-3xl font-extrabold text-gray-900">
+            Check your phone
+        </h2>
+        <p class="mt-2 text-gray-600">
+            We've sent a 6-digit verification code to your number.
         </p>
     </div>
+
+    <form method="POST" class="mt-8 space-y-6">
+        {{ form.hidden_tag() }}
+        
+        <div>
+            <label for="{{ form.otp.id }}" class="sr-only">OTP</label>
+            {{ form.otp(class="w-full p-4 text-center text-3xl font-bold tracking-[1em] border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500", placeholder="------", autocomplete="one-time-code", required=True, maxlength=6) }}
+            {% for error in form.otp.errors %}
+                <span class="text-red-500 text-sm mt-2 block">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.submit(class="w-full flex justify-center py-3 px-4 rounded-lg text-white font-bold bg-gradient-to-r from-purple-600 to-orange-500 hover:opacity-90 transition") }}
+        </div>
+    </form>
+    <p class="text-gray-600 text-center text-sm mt-6">
+        Didn't receive a code? 
+        <a href="{{ url_for('auth.resend_otp') }}" class="font-medium text-purple-600 hover:text-orange-500">
+            Resend
+        </a>
+    </p>
 </div>
 {% endblock %}

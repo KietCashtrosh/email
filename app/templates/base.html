@@ -2,38 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Stichie Tailoring{% endblock %}</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f8f9fa; }
-        /* Style for flash messages */
-        .flash { padding: 15px; margin: 0 20px 20px; border-radius: 8px; font-weight: 500; }
-        .success { background-color: #d4edda; color: #155724; }
-        .danger { background-color: #f8d7da; color: #721c24; }
-        .info { background-color: #d1ecf1; color: #0c5460; }
-    </style>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
     {% block head %}{% endblock %}
 </head>
-<body>
+<body class="bg-gray-100 font-sans">
 
     {% block body_content %}{% endblock %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-     <script src="https://cdn.tailwindcss.com"></script>
-     <script> 
+    
+    {% block scripts %}
+    <script>
+        // Configure Toastr.js
         toastr.options = {
-            "closeButton": true,
+            "positionClass": "toast-bottom-right",
             "progressBar": true,
-            // THIS IS THE CHANGED LINE
-            "positionClass": "toast-bottom-right", 
-            "timeOut": "500"
+            "timeOut": "4000"
         };
-     </script>
-    {% block scripts %}{% endblock %}
+
+        // Global function to update cart count in the navbar
+        function updateCartCount() {
+            const cartCountEl = document.getElementById('cart-item-count');
+            if (!cartCountEl || !'{{ current_user.is_authenticated }}') return;
+            fetch("{{ url_for('customer.cart_count') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        cartCountEl.textContent = data.count;
+                        cartCountEl.style.display = 'flex';
+                    } else {
+                        cartCountEl.style.display = 'none';
+                    }
+                });
+        }
+        window.updateCartCount = updateCartCount;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- Flash Message to Toastr Logic ---
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        toastr['{{ "error" if category == "danger" else category }}']("{{ message }}");
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            // Run scripts for authenticated users only
+            {% if current_user.is_authenticated %}
+                // Initial call to set cart count
+                updateCartCount();
+
+                // --- Real-time Notification Logic ---
+                const socket = io();
+                const bell = document.getElementById('notification-bell');
+                const countEl = document.getElementById('notification-count');
+                const dropdown = document.getElementById('notifications-dropdown');
+                
+                if (bell) {
+                    // (Your full notification logic for connecting, listening, and clicking the bell goes here)
+                }
+            {% endif %}
+        });
+    </script>
+    {% endblock %}
 </body>
 </html>
