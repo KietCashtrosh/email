@@ -1,11 +1,14 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from functools import wraps
+from sqlalchemy import func
+import random
+from datetime import datetime
 from .. import db
 from . import admin_bp
 from ..models import (
     Order, Service, MeasurementField, User, TailorProfile, DeliveryPartnerProfile,
-    Logistic, ServiceVariation, Category
+    Logistic, ServiceVariation, Category, OrderItem
 )
 from ..notifications.routes import create_notification
 from werkzeug.utils import secure_filename
@@ -29,24 +32,27 @@ def admin_required(f):
 @admin_required
 def dashboard():
     """Display admin dashboard with key statistics and pending actions."""
+    # Fetch pending tailor and delivery partner approvals
     pending_tailors = User.query.join(TailorProfile).filter(
-        User.role == 'tailor',
-        TailorProfile.is_verified == False
+        User.role == 'tailor', TailorProfile.is_verified == False
     ).all()
     pending_partners = User.query.join(DeliveryPartnerProfile).filter(
-        User.role == 'delivery_partner',
-        DeliveryPartnerProfile.is_approved == False
+        User.role == 'delivery_partner', DeliveryPartnerProfile.is_approved == False
     ).all()
+
+    # Calculate order statistics
     total_orders = Order.query.count()
     active_orders_count = Order.query.filter(Order.order_status != 'completed').count()
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
+
     return render_template(
         'admin/dashboard.html',
         pending_tailors=pending_tailors,
         pending_partners=pending_partners,
         total_orders=total_orders,
         active_orders_count=active_orders_count,
-        recent_orders=recent_orders
+        recent_orders=recent_orders,
+        current_year=datetime.now().year
     )
 
 # User Management Routes
@@ -57,7 +63,7 @@ def manage_users():
     """Display a paginated list of all users for admin management."""
     page = request.args.get('page', 1, type=int)
     users = User.query.order_by(User.created_at.desc()).paginate(page=page, per_page=15)
-    return render_template('admin/manage_users.html', users=users)
+    return render_template('admin/manage_users.html', users=users, current_year=datetime.now().year)
 
 @admin_bp.route('/user/<int:user_id>')
 @login_required
@@ -68,7 +74,7 @@ def user_details(user_id):
     recent_orders = Order.query.filter(
         (Order.customer_id == user_id) | (Order.tailor_id == user_id)
     ).order_by(Order.created_at.desc()).limit(5).all()
-    return render_template('admin/user_details.html', user=user, recent_orders=recent_orders)
+    return render_template('admin/user_details.html', user=user, recent_orders=recent_orders, current_year=datetime.now().year)
 
 @admin_bp.route('/tailors/pending')
 @login_required
@@ -78,7 +84,7 @@ def pending_tailors():
     tailors = User.query.join(TailorProfile).filter(
         TailorProfile.is_verified == False, User.role == 'tailor'
     ).all()
-    return render_template('admin/pending_tailors.html', tailors=tailors)
+    return render_template('admin/pending_tailors.html', tailors=tailors, current_year=datetime.now().year)
 
 @admin_bp.route('/tailors/approve/<int:user_id>', methods=['POST'])
 @login_required
@@ -116,7 +122,7 @@ def pending_delivery_partners():
     partners = User.query.join(DeliveryPartnerProfile).filter(
         DeliveryPartnerProfile.is_approved == False, User.role == 'delivery_partner'
     ).all()
-    return render_template('admin/pending_delivery_partners.html', partners=partners)
+    return render_template('admin/pending_delivery_partners.html', partners=partners, current_year=datetime.now().year)
 
 @admin_bp.route('/delivery_partners/approve/<int:user_id>', methods=['POST'])
 @login_required
@@ -141,9 +147,9 @@ def approve_delivery_partner(user_id):
             )
             flash('Delivery partner approved.', 'success')
         else:
-            flash('Invalid delivery partner profile.', 'danger')
+            flash('Invalid delivery partner profile.,' 'danger')
         return redirect(url_for('admin.dashboard'))
-    flash('Invalid form submission.', 'danger')
+    flash('Invalid form submission.,' 'danger')
     return redirect(url_for('admin.dashboard'))
 
 # Service Management Routes
@@ -153,7 +159,7 @@ def approve_delivery_partner(user_id):
 def services():
     """Display a list of all services in the system."""
     services = Service.query.all()
-    return render_template('admin/services.html', services=services)
+    return render_template('admin/services.html', services=services, current_year=datetime.now().year)
 
 @admin_bp.route('/services/add', methods=['GET', 'POST'])
 @login_required
@@ -176,7 +182,7 @@ def add_service():
         flash('Service added successfully!', 'success')
         return redirect(url_for('admin.services'))
 
-    return render_template('admin/add_service.html', form=form)
+    return render_template('admin/add_service.html', form=form, current_year=datetime.now().year)
 
 @admin_bp.route('/services/<int:service_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -205,7 +211,7 @@ def edit_service(service_id):
         flash('Service updated!', 'success')
         return redirect(url_for('admin.services'))
 
-    return render_template('admin/edit_service.html', form=form, service=service)
+    return render_template('admin/edit_service.html', form=form, service=service, current_year=datetime.now().year)
 
 @admin_bp.route('/services/<int:service_id>/delete', methods=['POST'])
 @login_required
@@ -250,7 +256,8 @@ def manage_service_measurements(service_id):
         form=form,
         service=service,
         all_measurements=MeasurementField.query.all(),
-        current_ids={m.id for m in service.standard_measurements}
+        current_ids={m.id for m in service.standard_measurements},
+        current_year=datetime.now().year
     )
 
 @admin_bp.route('/service/<int:service_id>/variations', methods=['GET', 'POST'])
@@ -273,7 +280,7 @@ def manage_service_variations(service_id):
         flash(f'Variation "{form.name.data}" added to {service.name}.', 'success')
         return redirect(url_for('admin.manage_service_variations', service_id=service.id))
 
-    return render_template('admin/manage_variations.html', form=form, service=service)
+    return render_template('admin/manage_variations.html', form=form, service=service, current_year=datetime.now().year)
 
 @admin_bp.route('/variation/<int:variation_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -299,7 +306,7 @@ def edit_variation(variation_id):
         flash("Variation updated successfully.", "success")
         return redirect(url_for('admin.manage_service_variations', service_id=variation.service_id))
 
-    return render_template('admin/edit_variation.html', form=form, variation=variation)
+    return render_template('admin/edit_variation.html', form=form, variation=variation, current_year=datetime.now().year)
 
 @admin_bp.route('/variation/<int:variation_id>/delete', methods=['POST'])
 @login_required
@@ -341,7 +348,7 @@ def manage_measurements():
         return redirect(url_for('admin.manage_measurements'))
 
     measurements = MeasurementField.query.all()
-    return render_template('admin/manage_measurements.html', form=form, measurements=measurements)
+    return render_template('admin/manage_measurements.html', form=form, measurements=measurements, current_year=datetime.now().year)
 
 @admin_bp.route('/measurement_fields/add', methods=['GET', 'POST'])
 @login_required
@@ -361,7 +368,7 @@ def add_measurement_field():
         flash('Measurement field added.', 'success')
         return redirect(url_for('admin.services'))
 
-    return render_template('admin/add_measurement_field.html', form=form)
+    return render_template('admin/add_measurement_field.html', form=form, current_year=datetime.now().year)
 
 @admin_bp.route('/orders')
 @login_required
@@ -370,7 +377,7 @@ def orders():
     """Display a list of all orders, filterable by status."""
     status = request.args.get('status')
     orders = Order.query.all() if not status else Order.query.filter_by(order_status=status).all()
-    return render_template('admin/orders.html', orders=orders)
+    return render_template('admin/orders.html', orders=orders, current_year=datetime.now().year)
 
 @admin_bp.route('/order/<int:order_id>/details')
 @login_required
@@ -378,7 +385,7 @@ def orders():
 def order_details(order_id):
     """Display detailed view of a specific order."""
     order = Order.query.get_or_404(order_id)
-    return render_template('admin/order_details.html', order=order)
+    return render_template('admin/order_details.html', order=order, current_year=datetime.now().year)
 
 @admin_bp.route('/orders/monitor')
 @login_required
@@ -389,7 +396,7 @@ def monitor_orders():
     active_orders = Order.query.filter(
         ~Order.order_status.in_(final_statuses)
     ).order_by(Order.created_at.desc()).all()
-    return render_template('admin/monitor_orders.html', orders=active_orders)
+    return render_template('admin/monitor_orders.html', orders=active_orders, current_year=datetime.now().year)
 
 @admin_bp.route('/logistics')
 @login_required
@@ -397,7 +404,7 @@ def monitor_orders():
 def logistics():
     """Display a list of all logistics tasks."""
     logistics = Logistic.query.all()
-    return render_template('admin/logistics.html', logistics=logistics)
+    return render_template('admin/logistics.html', logistics=logistics, current_year=datetime.now().year)
 
 @admin_bp.route('/categories', methods=['GET', 'POST'])
 @login_required
@@ -417,7 +424,7 @@ def manage_categories():
         return redirect(url_for('admin.manage_categories'))
 
     all_categories = Category.query.all()
-    return render_template('admin/manage_categories.html', form=form, categories=all_categories)
+    return render_template('admin/manage_categories.html', form=form, categories=all_categories, current_year=datetime.now().year)
 
 @admin_bp.route('/category/<int:category_id>/delete', methods=['POST'])
 @login_required
@@ -431,11 +438,9 @@ def delete_category(category_id):
         db.session.commit()
         flash(f'Category "{category.name}" has been deleted.', 'success')
         return redirect(url_for('admin.manage_categories'))
+    # flash('Invalid form submission., 'danger')
     flash('Invalid form submission.', 'danger')
     return redirect(url_for('admin.manage_categories'))
-
-# app/admin/routes.py
-import random # Make sure random is imported
 
 @admin_bp.route('/qc-queue')
 @login_required
@@ -443,8 +448,9 @@ import random # Make sure random is imported
 def qc_queue():
     """Displays all orders waiting for Quality Check."""
     pending_qc_orders = Order.query.filter_by(order_status='pending_qc').all()
-    return render_template('admin/qc_queue.html', orders=pending_qc_orders)
+    return render_template('admin/qc_queue.html', orders=pending_qc_orders, current_year=datetime.now().year)
 
+# in app/admin/routes.py
 
 @admin_bp.route('/qc/pass/<int:order_id>', methods=['POST'])
 @login_required
@@ -453,34 +459,21 @@ def qc_pass(order_id):
     """Marks an order as QC passed and creates the final delivery task."""
     order = Order.query.get_or_404(order_id)
     order.order_status = 'ready_for_delivery'
-    
-    # This is the same logic from the old 'complete_order' route
-    delivery_otp = str(random.randint(100000, 999999))
+
+    # --- This is the missing logic ---
+    tailor_pickup_otp = str(random.randint(100000, 999999))
     new_task = Logistic(
         order_id=order.id,
         delivery_partner_id=None,
         task_type='pickup_from_tailor',
         status='assigned',
-        pickup_otp=delivery_otp
+        pickup_otp=tailor_pickup_otp
     )
     db.session.add(new_task)
+    # --- End of missing logic ---
+
     db.session.commit()
-    
+
     flash(f"Order #{order.id} passed QC. A delivery task has been created.", "success")
     return redirect(url_for('admin.qc_queue'))
-
-
-@admin_bp.route('/qc/fail/<int:order_id>', methods=['POST'])
-@login_required
-@admin_required
-def qc_fail(order_id):
-    """Marks an order as QC failed and notifies the tailor."""
-    order = Order.query.get_or_404(order_id)
-    order.order_status = 'qc_failed'
-    db.session.commit()
-    
-    # Create a notification for the tailor
-    # create_notification(user_id=order.tailor_id, message=...)
-    
-    flash(f"Order #{order.id} failed QC. The tailor has been notified to rework.", "danger")
-    return redirect(url_for('admin.qc_queue'))
+   

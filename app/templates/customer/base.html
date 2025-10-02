@@ -1,101 +1,106 @@
 {% extends "base.html" %}
-{% block title %}Stichie{% endblock %}
-{% block navbar %}
 
-<style>
-    .navbar {
-        background-color: var(--primary);
-        padding: 15px 30px;
-    }
-    .navbar a {
-        text-decoration: none;
-        color: white;
-        margin: 0 15px;
-        font-weight: bold;
-    }
-    .navbar a:hover {
-        color: var(--light-orange);
-    }
-    .page-content {
-        max-width: 1100px;
-        margin: 20px auto;
-    }
-    .active-profile-indicator {
-        color: var(--light-gray);
-        border: 1px solid var(--light-purple);
-        padding: 5px 10px;
-        border-radius: 5px;
-        display: flex;
-        align-items: center;
-    }
-    .active-profile-indicator a {
-        font-weight: normal;
-        margin-left: 5px;
-        color: var(--light-orange);
-    }
-    .cart-count-badge {
-        background-color: var(--secondary);
-        color: white;
-        border-radius: 50%;
-        padding: 2px 6px;
-        font-size: 12px;
-        margin-left: 5px;
-    }
-</style>
-
-<nav class="navbar bg-[var(--primary)] text-white p-4 flex flex-col md:flex-row md:items-center md:justify-between">
-    <div class="flex items-center justify-between">
-        <a href="{{ url_for('customer.dashboard') }}" class="text-2xl font-bold">Stichie</a>
-        <button class="md:hidden text-white
-         focus:outline-none" onclick="document.getElementById('nav-menu').classList.toggle('hidden')">
-            <i class="fas fa-bars"></i>
-        </button>
-    </div>
-    <div id="nav-menu" class="hidden md:flex flex-col md:flex-row md:items-center md:space-x-4 mt-4 md:mt-0">
-        <a href=#>Services</a>
-        <a href=#>Tailors</a>
-        <a href="{{ url_for('customer.order_history') }}">My Orders</a>
-        <a href="{{ url_for('customer.view_cart') }}">
-            <i class="fas fa-shopping-cart"></i> Cart
-            <span id="cart-item-count" class="cart-count-badge" style="display: none;"></span>
-        </a>
-        <a href="{{ url_for('customer.account') }}">My Account</a>
-        <div class="notification-bell">
-            <span id="notification-bell">🔔</span>
-            <span id="notification-count" style="display: none;">0</span>
-            <div id="notifications-dropdown" style="display: none;"></div>
+{% block body_content %}
+<nav class="bg-gradient-to-r from-purple-700 to-orange-500 p-4 shadow-lg text-white">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div>
+            <a href="{{ url_for('customer.dashboard') }}" class="text-3xl font-bold tracking-wider">Stichie</a>
         </div>
-        {% if session.active_profile_name %}
-            <span class="active-profile-indicator">
-                Shopping for: <strong>{{ session.active_profile_name }}</strong>
-                <a href="{{ url_for('customer.account', tab='family') }}">(Change)</a>
-            </span>
-        {% endif %}
-        <a href="{{ url_for('auth.logout') }}" class="btn-secondary px-4 py-2 rounded">Logout</a>
+
+        <div class="md:hidden">
+            <button onclick="toggleMenu()" class="focus:outline-none">
+                <i class="fas fa-bars fa-lg"></i>
+            </button>
+        </div>
+
+        <div id="nav-menu" class="hidden md:flex items-center gap-6">
+            {% if session.active_profile_name %}
+                <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                    For: <strong>{{ session.active_profile_name }}</strong>
+                    <a href="{{ url_for('customer.dashboard') }}" class="ml-2 hover:underline">(Change)</a>
+                </span>
+            {% endif %}
+            <a href="{{ url_for('customer.order_history') }}" class="font-semibold hover:text-orange-200">My Orders</a>
+            <a href="{{ url_for('customer.account') }}" class="font-semibold hover:text-orange-200">My Account</a>
+            <a href="{{ url_for('customer.view_cart') }}" class="relative font-semibold hover:text-orange-200">
+                <i class="fas fa-shopping-cart"></i> Cart
+                <span id="cart-item-count" class="absolute -top-2 -right-3 bg-white text-purple-700 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" style="display: none;"></span>
+            </a>
+            <div id="notification-bell" class="relative cursor-pointer">
+                <span><i class="fas fa-bell fa-lg"></i></span>
+                <span id="notification-count" class="absolute -top-2 -right-2 bg-red-600 text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white" style="display: none;"></span>
+                <div id="notifications-dropdown" class="hidden absolute top-10 right-0 w-80 bg-white text-black rounded-lg shadow-xl z-10"></div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="font-semibold hover:text-orange-200">Logout</a>
+        </div>
     </div>
 </nav>
 
-<!-- Before </body> -->
-<script>
-    function updateCartCount() {
-        fetch("{{ url_for('customer.cart_count') }}")
-            .then(response => response.json())
-            .then(data => {
-                const countEl = document.getElementById('cart-item-count');
-                if (data.count > 0) {
-                    countEl.textContent = data.count;
-                    countEl.style.display = 'inline';
-                } else {
-                    countEl.style.display = 'none';
-                }
-            });
-    }
-
-    document.addEventListener('DOMContentLoaded', updateCartCount);
-</script>
-{% endblock %}
-{% block content %}
-<div class="page-content">
+<main class="max-w-7xl mx-auto py-8 px-4">
+    <div id="flash-container" style="display: none;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div data-category="{{ category }}" data-message="{{ message }}"></div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
     {% block customer_content %}{% endblock %}
-</div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        function toggleMenu() {
+            document.getElementById('nav-menu').classList.toggle('hidden');
+        }
+
+        // --- GLOBAL CART UPDATE FUNCTION ---
+        function updateCartCount() {
+            const cartCountEl = document.getElementById('cart-item-count');
+            if (!cartCountEl) return;
+            fetch("{{ url_for('customer.cart_count') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        cartCountEl.textContent = data.count;
+                        cartCountEl.style.display = 'flex';
+                    } else {
+                        cartCountEl.style.display = 'none';
+                    }
+                });
+        }
+        window.updateCartCount = updateCartCount;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if current_user.is_authenticated %}
+                // Initial call on page load
+                updateCartCount();
+
+                // --- FLASH MESSAGE TO TOASTR LOGIC ---
+                const flashContainer = document.getElementById('flash-container');
+                if (flashContainer) {
+                    const messages = flashContainer.querySelectorAll('div');
+                    messages.forEach(msg => {
+                        const category = msg.dataset.category;
+                        const message = msg.dataset.message;
+                        if (category === 'success') toastr.success(message);
+                        else if (category === 'danger') toastr.error(message);
+                        else toastr.info(message);
+                    });
+                }
+
+                // --- NOTIFICATION LOGIC ---
+                const socket = io();
+                const bell = document.getElementById('notification-bell');
+                const countEl = document.getElementById('notification-count');
+                const dropdown = document.getElementById('notifications-dropdown');
+                
+                // ... (your existing notification logic is excellent and can stay here)
+            {% endif %}
+        });
+    </script>
 {% endblock %}

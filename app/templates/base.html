@@ -6,102 +6,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f8f9fa; }
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-            color: white; /* Make the bell icon white */
-        }
-        .notification-count {
-            position: absolute; top: -8px; right: -8px; background-color: #dc3545;
-            color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7em;
-            font-weight: bold; display: none; /* Hidden by default */
-            border: 1px solid white;
-        }
-        .notifications-dropdown {
-            display: none; position: absolute; top: 40px; right: 0; width: 320px;
-            background-color: white; border: 1px solid #ddd; border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 1000; color: #333;
-        }
-        .notification-item { padding: 12px; border-bottom: 1px solid #eee; }
-        .notification-item a { text-decoration: none; color: #007bff; }
+        /* Style for flash messages */
+        .flash { padding: 15px; margin: 0 20px 20px; border-radius: 8px; font-weight: 500; }
+        .success { background-color: #d4edda; color: #155724; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
     </style>
     {% block head %}{% endblock %}
 </head>
 <body>
 
-    {% block content %}{% endblock %}
+    {% block body_content %}{% endblock %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-
-    {% block scripts %}
-    <script>
-        // Configure Toastr.js
-        toastr.options = { "positionClass": "toast-top-right", "timeOut": "5000" };
-
-        // This is the complete notification script
-        document.addEventListener('DOMContentLoaded', function () {
-            {% if current_user.is_authenticated %}
-                const socket = io();
-                const bell = document.getElementById('notification-bell');
-                const countEl = document.getElementById('notification-count');
-                const dropdown = document.getElementById('notifications-dropdown');
-
-                // Function to update the count display
-                function updateCount(count) {
-                    if (count > 0) {
-                        countEl.textContent = count;
-                        countEl.style.display = 'block';
-                    } else {
-                        countEl.style.display = 'none';
-                    }
-                }
-
-                // 1. Fetch initial unread count on page load
-                fetch("{{ url_for('notifications.unread_count') }}")
-                    .then(response => response.json())
-                    .then(data => updateCount(data.count));
-
-                // 2. Listen for new real-time notifications
-                socket.on('new_notification', function(data) {
-                    let currentCount = parseInt(countEl.textContent || '0');
-                    updateCount(currentCount + 1);
-                    toastr.info(data.message); // Show a Toastr notification
-                });
-                
-                // 3. Handle clicking the bell icon
-                bell.addEventListener('click', function() {
-                    const isVisible = dropdown.style.display === 'block';
-                    if (isVisible) {
-                        dropdown.style.display = 'none';
-                    } else {
-                        dropdown.style.display = 'block';
-                        updateCount(0); // Visually reset the count immediately
-                        
-                        fetch("{{ url_for('notifications.get_notifications') }}")
-                            .then(response => response.json())
-                            .then(notifications => {
-                                dropdown.innerHTML = '';
-                                if (notifications.length === 0) {
-                                    dropdown.innerHTML = '<div class="notification-item">No new notifications.</div>';
-                                    return;
-                                }
-                                notifications.forEach(n => {
-                                    const item = document.createElement('div');
-                                    item.className = 'notification-item';
-                                    item.innerHTML = `<a href="${n.link}">${n.message}</a>`;
-                                    dropdown.appendChild(item);
-                                });
-                            });
-                    }
-                });
-            {% endif %}
-        });
-    </script>
-    {% endblock %}
+     <script src="https://cdn.tailwindcss.com"></script>
+     <script> 
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            // THIS IS THE CHANGED LINE
+            "positionClass": "toast-bottom-right", 
+            "timeOut": "500"
+        };
+     </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

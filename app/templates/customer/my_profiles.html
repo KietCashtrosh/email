@@ -1,59 +1,70 @@
 {% extends "customer/base.html" %}
 {% block title %}My Family Profiles{% endblock %}
-{% block customer_content %}
-<div class="max-w-5xl mx-auto">
-    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Dashboard</a>
-    <h1 class="text-3xl font-bold text-[var(--primary)] mb-4">My Family Profiles</h1>
-    <p class="text-[var(--gray)] mb-6">Add profiles for family members to save their measurements and personalize your shopping experience.</p>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-[var(--gray)] mb-4">Add New Profile</h2>
-            <form method="POST" action="{{ url_for('customer.my_profiles') }}">
+{% block customer_content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-purple-600 hover:text-orange-500 font-semibold mb-6 inline-block transition-colors">&larr; Back to Dashboard</a>
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-extrabold text-gray-800">My Family Profiles</h1>
+        <p class="text-lg text-gray-500 mt-2">Manage profiles for your family to get personalized recommendations and save measurements.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1 bg-white p-8 rounded-xl shadow-lg border-t-4 border-purple-500">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Add a New Profile</h2>
+            <form method="POST" action="{{ url_for('customer.my_profiles') }}" class="space-y-4">
                 {{ form.hidden_tag() }}
-                <div class="mb-4">
-                    <label for="{{ form.name.id }}" class="block text-[var(--gray)] font-bold">Name</label>
-                    {{ form.name(class="w-full p-2 border rounded") }}
-                    {% for error in form.name.errors %}
-                        <span class="text-red-500 text-sm">{{ error }}</span>
-                    {% endfor %}
+                <div>
+                    <label for="{{ form.name.id }}" class="block text-gray-700 font-semibold">Name</label>
+                    {{ form.name(class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition") }}
                 </div>
-                <div class="mb-4">
-                    <label for="{{ form.relationship.id }}" class="block text-[var(--gray)] font-bold">Relationship</label>
-                    {{ form.relationship(class="w-full p-2 border rounded", placeholder="e.g., Son, Wife, Myself") }}
-                    {% for error in form.relationship.errors %}
-                        <span class="text-red-500 text-sm">{{ error }}</span>
-                    {% endfor %}
+                <div>
+                    <label for="{{ form.relationship.id }}" class="block text-gray-700 font-semibold">Relationship</label>
+                    {{ form.relationship(class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition", placeholder="e.g., Son, Wife, Myself") }}
                 </div>
-                <div class="mb-4">
-                    <label for="{{ form.gender.id }}" class="block text-[var(--gray)] font-bold">Gender</label>
-                    {{ form.gender(class="w-full p-2 border rounded") }}
-                    {% for error in form.gender.errors %}
-                        <span class="text-red-500 text-sm">{{ error }}</span>
-                    {% endfor %}
+                <div>
+                    <label for="{{ form.gender.id }}" class="block text-gray-700 font-semibold">Gender</label>
+                    {{ form.gender(class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition") }}
                 </div>
-                <div class="mb-4">
-                    <label for="{{ form.age_group.id }}" class="block text-[var(--gray)] font-bold">Age Group</label>
-                    {{ form.age_group(class="w-full p-2 border rounded") }}
-                    {% for error in form.age_group.errors %}
-                        <span class="text-red-500 text-sm">{{ error }}</span>
-                    {% endfor %}
+                <div>
+                    <label for="{{ form.age_group.id }}" class="block text-gray-700 font-semibold">Age Group</label>
+                    {{ form.age_group(class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition") }}
                 </div>
-                {{ form.submit(class="btn-primary px-4 py-2 rounded w-full") }}
+                {{ form.submit(class="w-full mt-4 bg-gradient-to-r from-purple-600 to-orange-500 text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition-opacity duration-300 cursor-pointer") }}
             </form>
         </div>
-        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-[var(--gray)] mb-4">Saved Profiles</h2>
+
+        <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Saved Profiles</h2>
+            <div class="space-y-4">
             {% if profiles %}
                 {% for profile in profiles %}
-                    <div class="bg-[var(--light-gray)] p-4 rounded-lg mb-4">
-                        <strong class="text-[var(--gray)]">{{ profile.name }}</strong> ({{ profile.relationship }})
-                        <p class="text-[var(--gray)] text-sm">{{ profile.gender }}, {{ profile.age_group }}</p>
+                    <div class="flex items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl">
+                            {% if 'son' in profile.relationship|lower or 'kid' in profile.age_group|lower %}
+                                <i class="fas fa-child"></i>
+                            {% elif 'female' in profile.gender|lower or 'wife' in profile.relationship|lower %}
+                                <i class="fas fa-female"></i>
+                            {% elif 'male' in profile.gender|lower %}
+                                <i class="fas fa-male"></i>
+                            {% else %}
+                                <i class="fas fa-user"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow ml-4">
+                            <strong class="text-gray-800 text-lg">{{ profile.name }}</strong> ({{ profile.relationship }})
+                            <p class="text-gray-500 text-sm">{{ profile.gender }}, {{ profile.age_group }}</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <a href="#" class="text-gray-400 hover:text-purple-600 mr-2"><i class="fas fa-edit"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-red-600"><i class="fas fa-trash"></i></a>
+                        </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <p class="text-[var(--gray)]">You have not added any profiles yet.</p>
+                <p class="text-gray-500">You have not added any profiles yet. Use the form on the left to get started.</p>
             {% endif %}
+            </div>
         </div>
     </div>
 </div>

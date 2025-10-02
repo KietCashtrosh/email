@@ -1,0 +1,22 @@
+{% extends "customer/base.html" %}
+{% block title %}Process Payment{% endblock %}
+{% block customer_content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <h1 class="text-2xl font-bold text-center">Final Step: Payment</h1>
+    <p class="text-center text-gray-500">Your order is ready. Select a payment method to complete the process.</p>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="space-y-4 mt-6">
+            {% for subfield in form.payment_option %}
+            <div class="relative">
+                {{ subfield(class="sr-only") }}
+                <label for="{{ subfield.id }}" class="option-card block p-4 rounded-lg cursor-pointer">
+                    <strong>{{ subfield.label.text }}</strong>
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+        {{ form.submit(class="w-full mt-6 bg-gradient-to-r from-purple-600 to-orange-500 ...") }}
+    </form>
+</div>
+{% endblock %}

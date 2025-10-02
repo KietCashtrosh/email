@@ -53,7 +53,7 @@ def check_profile_and_redirect(user):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('customer.account', tab='details'))
+        return check_profile_and_redirect(current_user)
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -77,6 +77,11 @@ def login():
             if not phone_number.isdigit() or len(phone_number) != 10:
                 flash('Please enter a valid 10-digit phone number or email.', 'danger')
                 return redirect(url_for('auth.login'))
+
+            user = User.query.filter_by(phone_number=phone_number).first()
+            if not user:
+                flash('User not found. Please register.', 'danger')
+                return redirect(url_for('auth.register'))
 
             # Generate OTP, store in session, and send
             otp = random.randint(100000, 999999)
@@ -105,21 +110,16 @@ def verify():
             context = session['verification_context']
             user = User.query.filter_by(phone_number=phone_number).first()
 
-            if context == 'registration':
-                if not user:
-                    user = User(phone_number=phone_number, role='customer', is_verified=True)
-                    profile = UserProfile(user=user, phone_number=phone_number)
-                    db.session.add(user)
-                    db.session.add(profile)
-                    db.session.commit()
-                    flash('Your account has been created and verified!', 'success')
-                else:
-                    user.is_verified = True
-                    db.session.commit()
-
             if not user:
                 flash('User not found. Please register.', 'danger')
+                session.pop('otp', None)
+                session.pop('phone_number_for_verification', None)
+                session.pop('verification_context', None)
                 return redirect(url_for('auth.register'))
+
+            if context == 'registration':
+                user.is_verified = True
+                db.session.commit()
 
             login_user(user, remember=True)
             session.pop('otp', None)
@@ -135,7 +135,7 @@ def verify():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('customer.account', tab='details'))
+        return check_profile_and_redirect(current_user)
 
     form = RegisterForm()
     if form.validate_on_submit():

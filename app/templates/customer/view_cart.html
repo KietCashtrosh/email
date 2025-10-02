@@ -1,42 +1,159 @@
 {% extends "customer/base.html" %}
 {% block title %}My Shopping Cart{% endblock %}
+
 {% block customer_content %}
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">My Shopping Cart</h1>
+<style>
+    /* Your styles are good and can be placed here */
+    .qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; }
+</style>
+
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <div class="text-center border-b border-gray-200 pb-6 mb-8">
+        <h1 class="text-4xl font-extrabold text-gray-800">My Shopping Cart</h1>
+    </div>
+
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+
     {% if cart and cart.items %}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2">
-                <ul class="space-y-4">
-                    {% for item in cart.items %}
-                        <li class="bg-white p-4 rounded-lg shadow-md flex gap-4 border-2 border-[var(--light-gray)] hover:border-[var(--primary)] transition-all duration-300">
-                            <div class="flex-grow">
-                                <h3 class="text-lg font-semibold text-[var(--gray)]">{{ item.tailor_service.service.name }}</h3>
-                                <p class="text-[var(--gray)]"><strong>Tailor:</strong> {{ item.tailor_service.tailor.profile.first_name }}</p>
-                                <p class="text-[var(--gray)]"><strong>Price:</strong> ₹{{ "%.2f"|format(item.tailor_service.price) }}</p>
-                            </div>
-                            <div class="flex items-center">
-                                <form method="POST" action="{{ url_for('customer.remove_from_cart', item_id=item.id) }}">
-                                    {{ form.hidden_tag() }}
-                                    <button type="submit" class="text-red-500 hover:text-red-600 text-xl" title="Remove Item">✖</button>
-                                </form>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="cart-container">
+            <div class="lg:col-span-2 space-y-4">
+                {% for item in cart.items %}
+    <div class="bg-white p-4 rounded-xl shadow-lg flex items-center gap-4" id="item-row-{{ item.id }}">
+        
+        <div class="flex-shrink-0">
+            <img src="{{ url_for('static', filename='uploads/' + item.tailor_service.service.image_url) if item.tailor_service.service.image_url else 'https://via.placeholder.com/80' }}"
+                 alt="{{ item.tailor_service.service.name }}"
+                 class="w-20 h-20 rounded-lg object-cover">
+        </div>
+        <div class="flex-grow">
+            <h3 class="text-lg font-bold text-gray-800">{{ item.tailor_service.service.name }}</h3>
+            <p class="text-sm text-gray-500">Tailor: {{ item.tailor_service.tailor.profile.first_name }}</p>
+            <p class="text-md font-semibold text-purple-600 mt-1" id="item-total-{{ item.id }}">
+                ₹{{ "%.2f"|format(item.tailor_service.price * item.quantity) }}
+            </p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
+                <button class="qty-btn" data-item-id="{{ item.id }}" data-url="{{ url_for('customer.update_cart_quantity', item_id=item.id) }}" data-action="decrease">-</button>
+                <span id="qty-{{ item.id }}" class="font-bold text-lg w-8 text-center">{{ item.quantity }}</span>
+                <button class="qty-btn" data-item-id="{{ item.id }}" data-url="{{ url_for('customer.update_cart_quantity', item_id=item.id) }}" data-action="increase">+</button>
             </div>
-            <div class="bg-[var(--light-gray)] p-6 rounded-lg shadow-md sticky top-6">
-                <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">Order Summary</h3>
-                <p class="text-[var(--gray)]"><strong>Subtotal:</strong> ₹{{ "%.2f"|format(cart.total) }}</p>
-                <hr class="my-4 border-[var(--light-gray)]">
-                <h3 class="text-xl font-semibold text-[var(--gray)] text-right">Total: ₹{{ "%.2f"|format(cart.total) }}</h3>
-                <a href="{{ url_for('customer.checkout') }}" class="btn-primary px-4 py-2 rounded w-full text-center mt-4" style="background-color: #10B981;">Proceed to Checkout</a>
+            <button class="remove-btn" data-item-id="{{ item.id }}" data-url="{{ url_for('customer.remove_from_cart', item_id=item.id) }}" title="Remove Item">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </div>
+        {% endfor %}
+            </div>
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-lg sticky top-6">
+                    <h3 class="text-2xl font-bold">Order Summary</h3>
+                    <div class="flex justify-between mt-4">
+                        <span>Total</span>
+                        <span id="cart-total" class="font-bold">₹{{ "%.2f"|format(cart.total) }}</span>
+                    </div>
+                    <a href="{{ url_for('customer.checkout') }}" class="block w-full text-center mt-6 bg-purple-600 text-white font-bold py-3 rounded-lg">Proceed to Checkout</a>
+                </div>
             </div>
         </div>
     {% else %}
-        <div class="text-center py-12">
-            <h2 class="text-2xl font-semibold text-[var(--gray)] mb-4">Your cart is empty.</h2>
-            <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline">Continue Shopping</a>
+        <div class="text-center py-16">
+            <h2 class="text-2xl font-semibold">Your cart is empty.</h2>
+            
+            {% if last_tailor_id %}
+                <a href="{{ url_for('customer.tailor_profile', tailor_id=last_tailor_id) }}" class="inline-block mt-6 bg-purple-600 ...">
+                    &larr; Back to Last Tailor
+                </a>
+            {% else %}
+                <a href="{{ url_for('customer.dashboard') }}" class="inline-block mt-6 bg-purple-600 ...">
+                    Continue Shopping
+                </a>
+            {% endif %}
         </div>
     {% endif %}
+
+    <div class="mt-8">
+        {% if last_tailor_id %}
+            <a href="{{ url_for('customer.tailor_profile', tailor_id=last_tailor_id) }}">&larr; Continue shopping from this tailor</a>
+        {% else %}
+            <a href="{{ url_for('customer.dashboard') }}">&larr; Continue shopping</a>
+        {% endif %}
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.getElementById('csrf_token').value;
+
+    // --- Handle Quantity Updates (+ and - buttons) ---
+    document.querySelectorAll('.qty-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const buttonEl = this;
+            const itemId = buttonEl.dataset.itemId;
+            const url = buttonEl.dataset.url;
+            const action = buttonEl.dataset.action;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ action: action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    toastr.error(data.message || 'An error occurred.');
+                    return;
+                }
+
+                // Update the UI based on the response
+                const qtyEl = document.getElementById(`qty-${itemId}`);
+                const itemTotalEl = document.getElementById(`item-total-${itemId}`);
+                const cartTotalEl = document.getElementById('cart-total');
+
+                if (data.item_removed) {
+                    document.getElementById(`item-row-${itemId}`).remove();
+                    toastr.info('Item removed from cart.');
+                } else {
+                    if (qtyEl) qtyEl.textContent = data.new_quantity;
+                    if (itemTotalEl) itemTotalEl.textContent = `₹${data.item_total.toFixed(2)}`;
+                }
+                
+                if (cartTotalEl) cartTotalEl.textContent = `₹${data.cart_total.toFixed(2)}`;
+                if (typeof updateCartCount === 'function') updateCartCount();
+            });
+        });
+    });
+
+    // --- Handle Item Removal (trash can button) ---
+    document.querySelectorAll('.remove-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const buttonEl = this;
+            const itemId = buttonEl.dataset.itemId;
+            const url = buttonEl.dataset.url;
+
+            if (confirm('Are you sure you want to remove this item?')) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        document.getElementById(`item-row-${itemId}`).remove();
+                        const cartTotalEl = document.getElementById('cart-total');
+                        if (cartTotalEl) cartTotalEl.textContent = `₹${data.cart_total.toFixed(2)}`;
+                        if (typeof updateCartCount === 'function') updateCartCount();
+                    } else {
+                        toastr.error('Could not remove item.');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

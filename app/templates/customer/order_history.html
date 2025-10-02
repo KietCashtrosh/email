@@ -1,33 +1,51 @@
 {% extends "customer/base.html" %}
-{% block title %}Order History{% endblock %}
+{% block title %}My Order History{% endblock %}
+
 {% block customer_content %}
-<div class="max-w-5xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-[var(--primary)]">Your Order History</h1>
-        <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline">&larr; Back to Dashboard</a>
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-800">Your Orders</h1>
+        <a href="{{ url_for('customer.dashboard') }}" class="text-purple-600 hover:text-orange-500 font-semibold transition-colors">&larr; Back to Dashboard</a>
     </div>
 
     {% if orders %}
-        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
-            <table class="w-full border-collapse">
-                <thead class="bg-[var(--light-gray)]">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-purple-700 to-orange-500 text-white">
                     <tr>
-                        <th class="p-4 text-left text-[var(--gray)]">Order ID</th>
-                        <th class="p-4 text-left text-[var(--gray)]">Date Placed</th>
-                        <th class="p-4 text-left text-[var(--gray)]">Status</th>
-                        <th class="p-4 text-left text-[var(--gray)]">Total Amount</th>
-                        <th class="p-4 text-left text-[var(--gray)]">Action</th>
+                        <th class="p-4 text-left font-semibold uppercase tracking-wider text-sm">Order ID</th>
+                        <th class="p-4 text-left font-semibold uppercase tracking-wider text-sm">Date</th>
+                        <th class="p-4 text-left font-semibold uppercase tracking-wider text-sm">Status</th>
+                        <th class="p-4 text-left font-semibold uppercase tracking-wider text-sm">Total</th>
+                        <th class="p-4 text-center font-semibold uppercase tracking-wider text-sm">Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200">
+                    {# Define a dictionary to map statuses to colors for cleaner code #}
+                    {% set status_colors = {
+                        'completed': 'bg-green-100 text-green-800',
+                        'pending_tailor_acceptance': 'bg-yellow-100 text-yellow-700',
+                        'cancelled': 'bg-red-100 text-red-700',
+                        'awaiting_pickup': 'bg-blue-100 text-blue-800',
+                        'in_progress': 'bg-purple-100 text-purple-800',
+                        'out_for_delivery': 'bg-indigo-100 text-indigo-800'
+                    } %}
+
                     {% for order in orders %}
-                        <tr class="border-b hover:bg-[var(--light-gray)]">
-                            <td class="p-4 text-[var(--gray)]">#{{ order.id }}</td>
-                            <td class="p-4 text-[var(--gray)]">{{ order.created_at.strftime('%d-%b-%Y') }}</td>
-                            <td class="p-4 text-[var(--gray)]">{{ order.order_status.replace('_', ' ')|title }}</td>
-                            <td class="p-4 text-[var(--gray)]">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-4 font-medium text-gray-800">#{{ order.id }}</td>
+                            <td class="p-4 text-gray-600">{{ order.created_at.strftime('%d %b %Y') }}</td>
                             <td class="p-4">
-                                <a href="{{ url_for('customer.order_details', order_id=order.id) }}" class="text-[var(--secondary)] hover:underline font-semibold">View Details</a>
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full {{ status_colors.get(order.order_status, 'bg-gray-200 text-gray-700') }}">
+                                    {{ order.order_status.replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <td class="p-4 font-semibold text-purple-700">₹{{ "%.2f"|format(order.total_amount) }}</td>
+                            <td class="p-4 text-center">
+                                <a href="{{ url_for('customer.order_details', order_id=order.id) }}" 
+                                   class="inline-block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-orange-500 hover:bg-purple-600 transition">
+                                   View Details
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}
@@ -35,6 +53,16 @@
             </table>
         </div>
     {% else %}
-        <p class="text-[var(--gray)]">You have not placed any orders yet.</p>
+        <div class="text-center py-16 bg-white rounded-xl shadow">
+            <svg class="w-12 h-12 mb-4 text-gray-300 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <p class="text-lg font-medium text-gray-600">You haven't placed any orders yet.</p>
+            <a href="{{ url_for('customer.dashboard') }}" 
+               class="mt-4 inline-block px-5 py-2 rounded-lg text-white font-semibold bg-purple-600 hover:bg-orange-500 transition">
+               Start Shopping
+            </a>
+        </div>
     {% endif %}
+</div>
 {% endblock %}

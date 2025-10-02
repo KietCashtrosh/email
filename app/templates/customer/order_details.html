@@ -2,158 +2,308 @@
 {% block title %}Order #{{ order.id }} Details{% endblock %}
 
 {% block customer_content %}
-    <!-- Include Tailwind CSS for rich styling -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- For icons -->
+<style>
+    /* Status Tracker (from second snippet) */
+    .status-tracker {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+        position: relative;
+        padding-top: 20px;
+    }
+    .status-tracker::before {
+        content: '';
+        position: absolute;
+        top: 35px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+    .status-tracker .progress-line {
+        position: absolute;
+        top: 35px;
+        left: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #7030a0 0%, #fe7b48 100%);
+        z-index: 2;
+        transition: width 0.5s ease-in-out;
+    }
+    .status-step {
+        position: relative;
+        text-align: center;
+        z-index: 3;
+        width: 12%; /* Adjusted for 8 steps */
+    }
+    .status-step .dot {
+        width: 20px;
+        height: 20px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        margin: 15px auto 0;
+        border: 3px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    .status-step .label {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75em;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    .status-step.completed .dot, .status-step.active .dot {
+        background-color: #7030a0;
+        border-color: #7030a0;
+    }
+    .status-step.active .dot { transform: scale(1.3); }
+    .status-step.completed .label, .status-step.active .label {
+        font-weight: bold;
+        color: #000;
+    }
 
-    <div class="order-container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-gradient-to-br from-gray-50 to-white">
-        <!-- Back Button -->
-        <a href="{{ url_for('customer.order_history') }}" class="back-link inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-6 transition duration-300 ease-in-out transform hover:-translate-y-1">
-            <i class="fas fa-arrow-left mr-2"></i> Back to Order History
-        </a>
+    /* Interactive Star Rating (from first snippet, adjusted for consistency) */
+    .rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+        gap: 0.25rem;
+    }
+    .rating input {
+        display: none;
+    }
+    .rating label {
+        font-size: 1.5em;
+        color: #d1d5db; /* gray-300 */
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .rating input:checked ~ label,
+    .rating label:hover,
+    .rating label:hover ~ label {
+        color: #f59e0b; /* yellow-500 */
+    }
 
-        <!-- Order Header -->
-        <h1 class="order-header text-2xl font-bold text-gray-900 text-center mb-8">Order Details #{{ order.id }}</h1>
+    /* Accordion Animation */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    }
+    .accordion-content.open {
+        max-height: 500px; /* Adjust based on content size */
+        padding-bottom: 1rem;
+    }
+</style>
 
-        <!-- Status Tracker -->
-        {% set statuses = ['pending_tailor_acceptance', 'awaiting_pickup', 'in_progress', 'ready_for_delivery', 'completed'] %}
-        {% set current_status_index = statuses.index(order.order_status) if order.order_status in statuses else -1 %}
-        {% set progress_percent = (current_status_index / (statuses|length - 1)) * 100 if current_status_index != -1 else 0 %}
-        <div class="status-tracker relative mb-8">
-            <div class="flex justify-between items-center">
-                {% for status in statuses %}
-                    <div class="flex-1 text-center">
-                        <div class="w-8 h-8 mx-auto rounded-full bg-gray-300 flex items-center justify-center text-sm text-white {{ 'bg-indigo-600' if loop.index0 <= current_status_index else '' }} transition-all duration-300">
-                            {{ loop.index }}
-                        </div>
-                        <p class="text-xs mt-2 text-gray-600 capitalize">{{ status.replace('_', ' ') }}</p>
-                    </div>
-                {% endfor %}
+<div class="max-w-4xl mx-auto px-4 py-10">
+    <a href="{{ url_for('customer.order_history') }}" class="inline-flex items-center text-purple-600 hover:text-orange-500 font-semibold mb-8">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Order History
+    </a>
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-10 text-center">Order #{{ order.id }}</h1>
+
+    {% set statuses = ['pending_tailor_acceptance', 'awaiting_pickup', 'fabric_in_transit', 'in_progress', 'pending_qc', 'ready_for_delivery', 'out_for_delivery', 'completed'] %}
+    {% set status_labels = {
+        'pending_tailor_acceptance': 'Placed',
+        'awaiting_pickup': 'Accepted',
+        'fabric_in_transit': 'In Transit',
+        'in_progress': 'Stitching',
+        'pending_qc': 'QC',
+        'ready_for_delivery': 'Ready',
+        'out_for_delivery': 'Delivering',
+        'completed': 'Delivered'
+    } %}
+    {% set current_status_index = statuses.index(order.order_status) if order.order_status in statuses else -1 %}
+    {% set progress_percent = (current_status_index / (statuses|length - 1)) * 100 if current_status_index >= 0 else 0 %}
+    <div class="status-tracker">
+        <div class="progress-line" style="width: {{ progress_percent }}%;"></div>
+        {% for status in statuses %}
+            {% set loop_index = loop.index0 %}
+            <div class="status-step {% if loop_index < current_status_index %}completed{% endif %} {% if loop_index == current_status_index %}active{% endif %}">
+                <div class="label">{{ status_labels[status] }}</div>
+                <div class="dot"></div>
             </div>
-            <div class="absolute top-4 left-0 w-full h-1 bg-gray-200">
-                <div class="h-1 bg-indigo-600 transition-all duration-300" style="width: {{ progress_percent }}%;"></div>
-            </div>
-        </div>
+        {% endfor %}
+    </div>
 
-        <!-- OTP Sections -->
-        {% if order.order_status == 'awaiting_pickup' and pickup_otp %}
-            <div class="detail-section bg-white border-2 border-green-500 p-6 rounded-lg shadow-md mb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Your Pickup OTP</h3>
-                <p class="text-gray-600 mb-4">Please provide this OTP to the delivery partner when they arrive.</p>
-                <div class="otp-code text-center text-3xl font-bold text-green-800 letter-spacing-6 mb-4">{{ pickup_otp }}</div>
-            </div>
-        {% endif %}
-        {% if order.order_status in ['ready_for_delivery', 'out_for_delivery'] and delivery_otp %}
-            <div class="detail-section bg-white border-2 border-green-500 p-6 rounded-lg shadow-md mb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Your Delivery OTP</h3>
-                <p class="text-gray-600 mb-4">Your order is on its way! Provide this OTP to the partner to confirm delivery.</p>
-                <div class="otp-code text-center text-3xl font-bold text-green-800 letter-spacing-6 mb-4">{{ delivery_otp }}</div>
-            </div>
-        {% endif %}
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
 
-        <!-- Order & Personnel -->
-        <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Order & Personnel</h3>
-            <div class="detail-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="detail-item">
-                    <p class="text-gray-600"><strong>Date Placed:</strong><br>{{ order.created_at.strftime('%d-%b-%Y, %I:%M %p') }}</p>
-                </div>
-                <div class="detail-item">
-                    <p class="text-gray-600"><strong>Service / Design:</strong><br>{{ order.items[0].tailor_service.service.name if order.items else 'N/A' }}</p>
-                </div>
-                <div class="detail-item">
-                    <p class="text-gray-600"><strong>Tailor Assigned:</strong><br>
-                        {% if order.tailor %}
-                            {{ order.tailor.profile.first_name }} {{ order.tailor.profile.last_name }}
-                        {% else %}
-                            Pending Assignment
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="detail-item">
-                    <p class="text-gray-600"><strong>Delivery Partner:</strong><br>
-                        {% if delivery_partner %}
-                            {{ delivery_partner.profile.first_name }} {{ delivery_partner.profile.last_name }}
-                        {% else %}
-                            Not yet assigned
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Logistics & Payment -->
-        <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Logistics & Payment</h3>
-            <div class="detail-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="detail-item">
-                    <p class="text-gray-600"><strong>Pickup/Delivery Address:</strong><br>
-                        {% if order.delivery_address %}
-                            {{ order.delivery_address.address_line1 }}<br>
-                            {{ order.delivery_address.city }}, {{ order.delivery_address.state }}
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="detail-item">
-                    <p class="text-gray-600"><strong>Payment Method:</strong><br>{{ order.payment_method.replace('_', ' ')|title if order.payment_method else 'Not Specified' }}</p>
-                    <p class="text-gray-600"><strong>Total Amount:</strong> ₹{{ "%.2f"|format(order.total_amount) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Measurements Provided -->
-        <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Measurements Provided</h3>
-            {% if order.items and order.items[0].measurements %}
-                <ul class="measurement-list list-none columns-2 gap-4">
-                    {% for measurement in order.items[0].measurements %}
-                        <li class="text-gray-600 mb-2"><span class="font-medium">{{ measurement.measurement_field.name }}:</span> {{ measurement.value }} inches</li>
-                    {% endfor %}
-                </ul>
-                {% if order.order_status == 'completed' %}
-                    <a href="{{ url_for('customer.save_measurements', item_id=order.items[0].id) }}" class="save-link inline-flex items-center px-4 py-2 mt-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out">
-                        <i class="fas fa-save mr-2"></i> Save these Measurements for Future Use
-                    </a>
+    <div class="space-y-4">
+        {% if (order.order_status == 'awaiting_pickup' and pickup_otp) or (order.order_status in ['ready_for_delivery', 'out_for_delivery'] and delivery_otp) %}
+        <div class="accordion border rounded-lg shadow-md bg-white">
+            <button class="accordion-header w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                <span class="font-semibold text-purple-700">OTP Details</span>
+                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+            </button>
+            <div class="accordion-content px-6">
+                {% if order.order_status == 'awaiting_pickup' and pickup_otp %}
+                <p><strong>Pickup OTP:</strong> {{ pickup_otp }}</p>
                 {% endif %}
-            {% elif order.measurement_method == 'home_visit' %}
-                <p class="text-gray-600">A home visit was requested. The measurements will be updated here as soon as our partner submits them.</p>
-            {% else %}
-                <p class="text-gray-600">No measurements have been recorded for this order yet.</p>
-            {% endif %}
+                {% if order.order_status in ['ready_for_delivery', 'out_for_delivery'] and delivery_otp %}
+                <p><strong>Delivery OTP:</strong> {{ delivery_otp }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="accordion border rounded-lg shadow-md bg-white">
+            <button class="accordion-header w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                <span class="font-semibold text-purple-700">Order & Personnel</span>
+                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+            </button>
+            <div class="accordion-content px-6">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <p><strong>Date Placed:</strong><br>{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+                    <p><strong>Service:</strong><br>{{ order.items[0].tailor_service.service.name if order.items else 'N/A' }}</p>
+                    <p><strong>Tailor:</strong><br>{% if order.tailor %}{{ order.tailor.profile.first_name }}{% else %}Pending{% endif %}</p>
+                    <p><strong>Delivery Partner:</strong><br>{% if delivery_partner %}{{ delivery_partner.profile.first_name }}{% else %}Not assigned{% endif %}</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Review Section -->
+        <div class="accordion border rounded-lg shadow-md bg-white">
+            <button class="accordion-header w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                <span class="font-semibold text-purple-700">Logistics & Payment</span>
+                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+            </button>
+            <div class="accordion-content px-6">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <p><strong>Address:</strong><br>{% if order.delivery_address %}{{ order.delivery_address.address_line1 }}, {{ order.delivery_address.city }}{% else %}N/A{% endif %}</p>
+                    <p><strong>Payment Method:</strong><br>{{ order.payment_method.replace('_', ' ')|title if order.payment_method else 'N/A' }}</p>
+                    <p><strong>Total:</strong><br>₹{{ "%.2f"|format(order.total_amount) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion border rounded-lg shadow-md bg-white">
+            <button class="accordion-header w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                <span class="font-semibold text-purple-700">Measurements</span>
+                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+            </button>
+            <div class="accordion-content px-6">
+                {% if order.items and order.items[0].measurements %}
+                    <ul class="list-disc pl-5 grid md:grid-cols-2 gap-x-4">
+                        {% for measurement in order.items[0].measurements %}
+                            <li><strong>{{ measurement.measurement_field.name }}:</strong> {{ measurement.value }} in</li>
+                        {% endfor %}
+                    </ul>
+                    {% if order.order_status == 'completed' %}
+                        <a href="{{ url_for('customer.save_measurements', item_id=order.items[0].id) }}" class="text-purple-600 hover:text-orange-500 mt-2 inline-block">Save Measurements</a>
+                    {% endif %}
+                {% else %}
+                    <p>No measurements recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
         {% if order.order_status == 'completed' %}
-            {% if not order.rating %}
-                <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Leave a Review</h3>
-                    <p class="text-gray-600 mb-4">How was your experience with {{ order.tailor.profile.first_name }}?</p>
-                    <form class="rating-form space-y-4" method="POST" action="{{ url_for('customer.rate_order', order_id=order.id) }}">
-                        <div>
-                            <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
-                            <div class="rating flex flex-row-reverse justify-end">
-                                {% for i in range(5, 0, -1) %}
-                                    <input type="radio" id="star{{ i }}" name="score" value="{{ i }}" required class="hidden">
-                                    <label for="star{{ i }}" class="text-2xl text-gray-300 cursor-pointer hover:text-yellow-400 {{ 'text-yellow-400' if loop.index0 < 5 and loop.index0 >= (5 - loop.length + loop.index0) }} transition duration-200">&starf;</label>
-                                {% endfor %}
+        <div class="accordion border rounded-lg shadow-md bg-white">
+            <button class="accordion-header w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                <span class="font-semibold text-purple-700">Leave a Review</span>
+                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+            </button>
+            <div class="accordion-content px-6">
+                {% if not order.rating %}
+                    <form method="POST" action="{{ url_for('customer.rate_order', order_id=order.id) }}" id="review-form">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-4">
+                            <label class="block font-semibold mb-2 text-gray-700">Your Rating:</label>
+                            <div class="rating">
+                                <input type="radio" id="star5" name="score" value="5" required><label for="star5">★</label>
+                                <input type="radio" id="star4" name="score" value="4"><label for="star4">★</label>
+                                <input type="radio" id="star3" name="score" value="3"><label for="star3">★</label>
+                                <input type="radio" id="star2" name="score" value="2"><label for="star2">★</label>
+                                <input type="radio" id="star1" name="score" value="1"><label for="star1">★</label>
                             </div>
                         </div>
-                        <div>
-                            <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
-                            <textarea name="comment" id="comment" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out"></textarea>
+                        <div class="mb-4">
+                            <label for="comment" class="block font-semibold mb-2 text-gray-700">Your Comments:</label>
+                            <textarea name="comment" id="comment" rows="3" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
                         </div>
-                        <button type="submit" class="w-full flex justify-center py-2 px-4 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:-translate-y-1">
-                            Submit Review
-                        </button>
+                        <button type="submit" class="w-full bg-orange-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors duration-300">Submit Review</button>
                     </form>
-                </div>
-            {% else %}
-                <div class="detail-section bg-white border border-gray-200 p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Your Review</h3>
-                    <p class="text-gray-600"><strong>Your Rating:</strong> {{ order.rating.score }} ★</p>
-                    <p class="text-gray-600"><strong>Your Comment:</strong> "{{ order.rating.comment }}"</p>
-                </div>
-            {% endif %}
+                {% else %}
+                    <p><strong>Your Rating:</strong> <span class="text-yellow-500">{{ '★' * order.rating.score }}</span></p>
+                    <p><strong>Your Comment:</strong> "{{ order.rating.comment }}"</p>
+                {% endif %}
+            </div>
+        </div>
         {% endif %}
     </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get CSRF token safely
+    const csrfToken = document.getElementById('csrf_token')?.value || '';
+
+    // Handle accordion toggles with smooth animation
+    document.querySelectorAll('.accordion-header').forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            const isOpen = content.classList.contains('open');
+
+            // Toggle accordion
+            content.classList.toggle('open', !isOpen);
+            icon.classList.toggle('rotate-180', !isOpen);
+
+            // Adjust max-height for smooth transition
+            if (!isOpen) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+            } else {
+                content.style.maxHeight = '0';
+            }
+        });
+    });
+
+    // Handle review form submission via AJAX for better UX
+    const reviewForm = document.getElementById('review-form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(reviewForm);
+            const url = reviewForm.action;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData // Use FormData for file uploads or complex forms
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message || 'Review submitted successfully!');
+                    // Update UI without reloading
+                    const reviewContent = reviewForm.closest('.accordion-content');
+                    reviewContent.innerHTML = `
+                        <p><strong>Your Rating:</strong> <span class="text-yellow-500">${'★'.repeat(data.score)}</span></p>
+                        <p><strong>Your Comment:</strong> "${data.comment}"</p>
+                    `;
+                    // Ensure accordion stays open
+                    reviewContent.classList.add('open');
+                    reviewContent.style.maxHeight = reviewContent.scrollHeight + 'px';
+                } else {
+                    toastr.error(data.message || 'Failed to submit review.');
+                }
+            })
+            .catch(error => {
+                console.error('Review submission error:', error);
+                toastr.error('Failed to submit review. Please try again.');
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -1,89 +1,88 @@
 {% extends "customer/base.html" %}
 {% block title %}Checkout{% endblock %}
+
 {% block customer_content %}
 <style>
-    .place-order-btn {
-        background-color: #10B981;
-        color: white;
+    .option-card {
+        border: 2px solid #e5e7eb;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .place-order-btn:hover {
-        background-color: #059669;
+    input[type="radio"]:checked + label {
+        border-color: #7030a0; /* Purple */
+        box-shadow: 0 0 0 2px #7030a0;
+    }
+    .form-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 5px;
     }
 </style>
 
-<div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">Checkout</h1>
-    <form method="POST" action="{{ url_for('customer.checkout') }}">
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <div class="text-center border-b border-gray-200 pb-6 mb-8">
+        <h1 class="text-4xl font-extrabold text-gray-800">Complete Your Order</h1>
+    </div>
+
+    <form method="POST">
         {{ form.hidden_tag() }}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2">
-                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">1. Select Delivery Address</h3>
-                    {% for address in addresses %}
-                        <div class="mb-4">
-                            <input type="radio" name="delivery_address_id" value="{{ address.id }}" id="addr_{{ address.id }}" {% if address.is_default %}checked{% endif %} class="mr-2" required>
-                            <label for="addr_{{ address.id }}" class="text-[var(--gray)]">
-                                <strong>{{ address.address_line1 }}</strong>, {{ address.city }}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">1. Select Delivery Address</h3>
+                    <div class="space-y-3">
+                        {% for choice in form.delivery_address_id %}
+                            <div class="relative">
+                                {{ choice(class="sr-only") }}
+                                <label for="{{ choice.id }}" class="option-card block p-4 rounded-lg cursor-pointer">
+                                    {{ choice.label.text }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                        {% for error in form.delivery_address_id.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">2. Select Measurement Method</h3>
+                    <div class="space-y-3">
+                        {% for subfield in form.measurement_method %}
+                        <div class="relative">
+                            {{ subfield(class="sr-only") }}
+                            <label for="{{ subfield.id }}" class="option-card block p-4 rounded-lg cursor-pointer">
+                                <strong>{{ subfield.label.text }}</strong>
                             </label>
                         </div>
-                    {% else %}
-                        <p class="text-[var(--gray)]">No addresses found. <a href="{{ url_for('customer.account') }}" class="text-[var(--secondary)] hover:underline">Please add an address.</a></p>
-                    {% endfor %}
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">2. Select Measurement Method</h3>
-                    <div class="mb-4">
-                        <input type="radio" name="measurement_method" value="online_submission" id="method_online" checked class="mr-2">
-                        <label for="method_online" class="text-[var(--gray)]">Enter Measurements Online</label>
+                        {% endfor %}
+                        {% for error in form.measurement_method.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
                     </div>
-                    <div class="mb-4">
-                        <input type="radio" name="measurement_method" value="home_visit" id="method_visit" class="mr-2">
-                        <label for="method_visit" class="text-[var(--gray)]">Request a Home Visit</label>
-                    </div>
-                    {% for error in form.measurement_method.errors %}
-                        <span class="text-red-500 text-sm">{{ error }}</span>
-                    {% endfor %}
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-                    <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">3. Select Payment Method</h3>
-                    <div class="mb-4">
-                        <input type="radio" name="payment_method" value="cash_on_delivery" id="payment_cod" checked class="mr-2">
-                        <label for="payment_cod" class="text-[var(--gray)]">Cash on Delivery</label>
-                    </div>
-                    <div class="mb-4">
-                        <input type="radio" name="payment_method" value="online_advance" id="payment_advance" class="mr-2">
-                        <label for="payment_advance" class="text-[var(--gray)]">Online Advance</label>
-                    </div>
-                    <div class="mb-4">
-                        <input type="radio" name="payment_method" value="online_full" id="payment_full" class="mr-2">
-                        <label for="payment_full" class="text-[var(--gray)]">Online Full</label>
-                    </div>
-                    {% for error in form.payment_method.errors %}
-                        <span class="text-red-500 text-sm">{{ error }}</span>
-                    {% endfor %}
                 </div>
             </div>
 
-            <div class="bg-[var(--light-gray)] p-6 rounded-lg shadow-md sticky top-4">
-                <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">Order Summary</h3>
-                {% if cart and cart.items %}
-                    {% for item in cart.items %}
-                        <p class="flex justify-between text-[var(--gray)]">
-                            <span>{{ item.tailor_service.service.name }}</span>
-                            <span>₹{{ "%.2f"|format(item.tailor_service.price) }}</span>
-                        </p>
-                    {% endfor %}
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-lg sticky top-6 border-t-4 border-purple-500">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-4">Order Summary</h3>
+                    
+                    <div class="space-y-2">
+                    {% if cart and cart.items %}
+                        {% for item in cart.items %}
+                            <p class="flex justify-between text-gray-600">
+                                <span>{{ item.quantity }} x {{ item.tailor_service.service.name }}</span>
+                                <span>₹{{ "%.2f"|format(item.tailor_service.price * item.quantity) }}</span>
+                            </p>
+                        {% endfor %}
+                    {% endif %}
+                    </div>
                     <hr class="my-4">
-                    <h4 class="flex justify-between text-[var(--gray)]">
-                        <span>Total:</span>
+                    <div class="flex justify-between text-gray-800 font-bold text-xl">
+                        <span>Total</span>
                         <span>₹{{ "%.2f"|format(cart.total) }}</span>
-                    </h4>
-                {% else %}
-                    <p class="text-[var(--gray)]">No items in cart.</p>
-                {% endif %}
-                {{ form.submit(class="place-order-btn px-4 py-2 rounded w-full mt-4") }}
+                    </div>
+                    <button type="submit"
+                       class="w-full text-center mt-6 bg-gradient-to-r from-purple-600 to-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity duration-300 cursor-pointer">
+                        Continue to Payment
+                    </button>
+                </div>
             </div>
         </div>
     </form>

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, IntegerField, SelectField, TextAreaField, SelectMultipleField, FileField, HiddenField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, IntegerField, SelectField, TextAreaField, SelectMultipleField, FileField, HiddenField, RadioField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, NumberRange, Regexp
 
 # Authentication Forms
@@ -55,7 +55,7 @@ class AddressForm(FlaskForm):
 class OrderForm(FlaskForm):
     """Form for placing a new order."""
     measurement_method = SelectField('Measurement Method', choices=[('online_submission', 'Online Submission'), ('home_visit', 'Home Visit')], validators=[DataRequired()])
-    payment_method = SelectField('Payment Method', choices=[('cash_on_delivery', 'Cash on Delivery'), ('online_advance', 'Online Advance'), ('online_full', 'Online Full')], validators=[DataRequired()])
+    # payment_method = SelectField('Payment Method', choices=[('cash_on_delivery', 'Cash on Delivery'), ('online_advance', 'Online Advance'), ('online_full', 'Online Full')], validators=[DataRequired()])
     delivery_address_id = SelectField('Delivery Address', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Place Order')
 
@@ -154,3 +154,17 @@ class VariationForm(FlaskForm):
 class AddToCartForm(FlaskForm):
     csrf_token = HiddenField()  # this is auto-populated by Flask-WTF
     tailor_service_id = HiddenField("Service ID", validators=[DataRequired()])
+
+class PaymentForm(FlaskForm):
+    """Form for selecting a payment option."""
+    payment_option = RadioField(
+        'Payment Method', 
+        choices=[
+            ('cod', 'Pay on Delivery / Visit'),
+            ('advance', 'Pay 40% Advance Now'),
+            ('full', 'Pay Full Amount Now')
+        ],
+        default='cod',
+        validators=[DataRequired()]
+    )
+    submit = SubmitField('Pay & Confirm Order')

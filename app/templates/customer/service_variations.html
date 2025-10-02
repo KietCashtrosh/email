@@ -1,25 +1,42 @@
 {% extends "customer/base.html" %}
 {% block title %}Select a {{ service.name }} Style{% endblock %}
+
 {% block customer_content %}
-<div class="max-w-5xl mx-auto">
-    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Back to Services</a>
-    <div class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-[var(--primary)]">Choose a style for <strong>{{ service.name }}</strong></h1>
+<div class="max-w-7xl mx-auto py-8 px-4">
+    <a href="javascript:history.back()" class="text-purple-600 hover:text-orange-500 font-semibold mb-6 inline-block transition-colors">&larr; Back to Services</a>
+    
+    <div class="text-center border-b border-gray-200 pb-6 mb-8">
+        <h1 class="text-4xl font-extrabold text-gray-800">Choose a Style for <strong>{{ service.name }}</strong></h1>
+        <p class="text-lg text-gray-500 mt-2">Select your preferred design to see available tailors.</p>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {% for variation in service.variations %}
-            <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
-                {% if variation.image_url %}
-                    <img src="{{ variation.image_url }}" alt="{{ variation.name }}" class="w-full h-40 object-cover rounded-t-lg">
-                {% else %}
-                    <img src="https://via.placeholder.com/220x150.png?text={{ variation.name|replace(' ', '+') }}" alt="{{ variation.name }}" class="w-full h-40 object-cover rounded-t-lg">
-                {% endif %}
-                <h3 class="text-lg font-semibold text-[var(--gray)] p-4">{{ variation.name }}</h3>
+            <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" 
+               class="group bg-white rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden text-center">
+                
+                <div class="h-48 overflow-hidden">
+                    {% if variation.image_url %}
+                        <img src="{{ url_for('static', filename='uploads/' + variation.image_url) }}" alt="{{ variation.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    {% else %}
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-image fa-2x"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-gray-800">{{ variation.name }}</h3>
+                </div>
             </a>
         {% else %}
-            <p class="text-[var(--gray)]">No specific variations are available for this service. 
-                <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="text-[var(--secondary)] hover:underline">Click here to see tailors who can provide this service.</a>
-            </p>
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-info-circle fa-3x text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700">No Specific Styles Available</h3>
+                <p class="text-gray-500 mt-2">
+                    <a href="{{ url_for('customer.tailors_for_service', service_id=service.id) }}" class="text-purple-600 font-semibold hover:underline">Click here</a> to see all tailors who can provide this service.
+                </p>
+            </div>
         {% endfor %}
     </div>
 </div>

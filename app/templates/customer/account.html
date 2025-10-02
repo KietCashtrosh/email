@@ -1,173 +1,155 @@
 {% extends "customer/base.html" %}
 {% block title %}My Account{% endblock %}
+
 {% block customer_content %}
 <style>
-    .tabs {
-        display: flex;
-        border-bottom: 2px solid var(--light-gray);
-        margin-bottom: 20px;
-    }
-    .tab-link {
-        padding: 10px 20px;
-        cursor: pointer;
-        color: var(--gray);
-        font-weight: bold;
-        border-bottom: 3px solid transparent;
-    }
-    .tab-link.active {
-        border-bottom-color: var(--primary);
-        color: var(--primary);
-    }
-    .tab-content {
-        display: none;
-    }
-    .tab-content.active {
-        display: block;
-    }
-    .default-badge {
-        background-color: #10B981;
-        color: white;
-        font-size: 0.8em;
-        padding: 3px 8px;
-        border-radius: 10px;
-        margin-left: 10px;
-        vertical-align: middle;
-    }
+    .tabs { display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
+    .tab-link { padding: 10px 20px; cursor: pointer; font-semibold text-gray-500; border-bottom: 3px solid transparent; }
+    .tab-link.active { border-bottom-color: #7030a0; color: #7030a0; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 
-<div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-[var(--primary)] mb-6">My Account</h1>
+<div class="max-w-6xl mx-auto py-8">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-8">My Account</h1>
 
     <div class="tabs">
-        <div class="tab-link active" onclick="openTab(event, 'details')">My Details</div>
-        <div class="tab-link" onclick="openTab(event, 'addresses')">Address Book</div>
-        <div class="tab-link" onclick="openTab(event, 'family')">Family Members</div>
+        <button class="tab-link" data-tab="details">My Details</button>
+        <button class="tab-link" data-tab="addresses">Address Book</button>
+        <button class="tab-link" data-tab="family">Family Members</button>
     </div>
 
-    <div id="details" class="tab-content active">
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold text-[var(--gray)] mb-4">Your Personal Details</h2>
-            <form method="POST" action="{{ url_for('customer.update_profile') }}">
+    <div id="details" class="tab-content">
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Personal Details</h2>
+            <form method="POST" action="{{ url_for('customer.account') }}">
                 {{ profile_form.hidden_tag() }}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="{{ profile_form.first_name.id }}" class="block text-[var(--gray)] font-bold">First Name</label>
-                        {{ profile_form.first_name(class="w-full p-2 border rounded") }}
-                        {% for error in profile_form.first_name.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
+                        <label class="block text-gray-700 font-semibold">First Name</label>
+                        {{ profile_form.first_name(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
                     </div>
                     <div>
-                        <label for="{{ profile_form.last_name.id }}" class="block text-[var(--gray)] font-bold">Last Name</label>
-                        {{ profile_form.last_name(class="w-full p-2 border rounded") }}
-                        {% for error in profile_form.last_name.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
+                        <label class="block text-gray-700 font-semibold">Last Name</label>
+                        {{ profile_form.last_name(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
                     </div>
                     <div>
-                        <label for="{{ profile_form.email.id }}" class="block text-[var(--gray)] font-bold">Email</label>
-                        {{ profile_form.email(class="w-full p-2 border rounded") }}
-                        {% for error in profile_form.email.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
+                        <label class="block text-gray-700 font-semibold">Email</label>
+                        {{ profile_form.email(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
                     </div>
                     <div>
-                        <label for="{{ profile_form.phone_number.id }}" class="block text-[var(--gray)] font-bold">Phone Number</label>
-                        {{ profile_form.phone_number(class="w-full p-2 border rounded bg-gray-200", readonly=true) }}
-                        {% for error in profile_form.phone_number.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
+                        <label class="block text-gray-700 font-semibold">Phone Number</label>
+                        <input type="text" value="{{ current_user.phone_number }}" class="w-full mt-1 p-2 border bg-gray-100 rounded-md" readonly>
                     </div>
                 </div>
-                {{ profile_form.submit(class="btn-primary px-4 py-2 rounded mt-6 w-full") }}
+                {{ profile_form.submit(class="w-full mt-6 bg-purple-600 text-white font-bold py-3 px-4 rounded-md") }}
             </form>
         </div>
     </div>
 
     <div id="addresses" class="tab-content">
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="bg-white p-8 rounded-xl shadow-lg">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold text-[var(--gray)]">Your Addresses</h2>
-                <a href="{{ url_for('customer.add_address') }}" class="text-[var(--secondary)] hover:underline">Add New Address</a>
+                <h2 class="text-2xl font-bold text-gray-800">Your Addresses</h2>
+                <a href="{{ url_for('customer.add_address') }}" class="bg-purple-600 text-white font-semibold py-2 px-4 rounded-md">Add New Address</a>
             </div>
             {% for address in addresses %}
-                <div class="bg-[var(--light-gray)] p-4 rounded-lg mb-4">
+                <div class="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-200">
                     <strong>{{ address.address_line1 }}</strong>
-                    {% if address.is_default %}
-                        <span class="default-badge">Default</span>
-                    {% endif %}
-                    <p>{{ address.city }}, {{ address.state }} - {{ address.postal_code }}</p>
+                    {% if address.is_default %}<span class="ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">Default</span>{% endif %}
+                    <p class="text-gray-500">{{ address.city }}, {{ address.state }}</p>
                 </div>
             {% else %}
-                <p class="text-[var(--gray)]">You have no saved addresses.</p>
+                <p>You have no saved addresses.</p>
             {% endfor %}
         </div>
     </div>
 
-    <div id="family" class="tab-content">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">Add a Family Member</h3>
-                <form method="POST" action="{{ url_for('customer.my_profiles') }}">
-                    {{ subprofile_form.hidden_tag() }}
-                    <div class="mb-4">
-                        <label for="{{ subprofile_form.name.id }}" class="block text-[var(--gray)] font-bold">Name</label>
-                        {{ subprofile_form.name(class="w-full p-2 border rounded") }}
-                        {% for error in subprofile_form.name.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-4">
-                        <label for="{{ subprofile_form.relationship.id }}" class="block text-[var(--gray)] font-bold">Relationship</label>
-                        {{ subprofile_form.relationship(class="w-full p-2 border rounded") }}
-                        {% for error in subprofile_form.relationship.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-4">
-                        <label for="{{ subprofile_form.gender.id }}" class="block text-[var(--gray)] font-bold">Gender</label>
-                        {{ subprofile_form.gender(class="w-full p-2 border rounded") }}
-                        {% for error in subprofile_form.gender.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-4">
-                        <label for="{{ subprofile_form.age_group.id }}" class="block text-[var(--gray)] font-bold">Age Group</label>
-                        {{ subprofile_form.age_group(class="w-full p-2 border rounded") }}
-                        {% for error in subprofile_form.age_group.errors %}
-                            <span class="text-red-500 text-sm">{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                    {{ subprofile_form.submit(class="btn-primary px-4 py-2 rounded w-full") }}
-                </form>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold text-[var(--gray)] mb-4">Your Saved Profiles</h3>
-                {% for profile in sub_profiles %}
-                    <div class="bg-[var(--light-gray)] p-4 rounded-lg mb-4">
+   <div id="family" class="tab-content">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1 bg-white p-8 rounded-xl shadow-lg">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Add a Member</h3>
+            <form method="POST" action="{{ url_for('customer.account') }}" class="space-y-4">
+                {{ subprofile_form.hidden_tag() }}
+                
+                <div>
+                    <label class="block text-gray-700 font-semibold">Name</label>
+                    {{ subprofile_form.name(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold">Relationship</label>
+                    {{ subprofile_form.relationship(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold">Gender</label>
+                    {{ subprofile_form.gender(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold">Age Group</label>
+                    {{ subprofile_form.age_group(class="w-full mt-1 p-2 border border-gray-300 rounded-md") }}
+                </div>
+                {{ subprofile_form.submit(class="w-full mt-4 bg-purple-600 text-white font-bold py-3 px-4 rounded-md") }}
+            </form>
+        </div>
+        <div class="lg:col-span-2 bg-white p-8 rounded-xl shadow-lg">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Saved Profiles</h3>
+            {% for profile in sub_profiles %}
+                <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg mb-4 border">
+                    <div>
                         <strong>{{ profile.name }}</strong> ({{ profile.relationship }})
                     </div>
-                {% else %}
-                    <p class="text-[var(--gray)]">No family profiles added yet.</p>
-                {% endfor %}
-            </div>
+                    <div>
+                        <form method="POST" action="{{ url_for('customer.delete_sub_profile', profile_id=profile.id) }}"
+                              onsubmit="return confirm('Are you sure you want to delete this profile?');">
+                            {{ form.hidden_tag() }}
+                            <button type="submit" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <p>No family profiles added yet.</p>
+            {% endfor %}
         </div>
     </div>
 </div>
+</div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
 <script>
-    function openTab(evt, tabName) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Deactivate all
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            // Activate clicked
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // --- NEW: LOGIC TO "REMEMBER" THE ACTIVE TAB ---
+    // This reads the ?tab=... from the URL that your backend sends on redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+        // Find the button with the matching data-tab attribute and click it
+        const tabToActivate = document.querySelector(`.tab-link[data-tab='${activeTab}']`);
+        if (tabToActivate) {
+            tabToActivate.click();
         }
-        tablinks = document.getElementsByClassName("tab-link");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
+    } else {
+        // Default to the first tab if none is specified
+        document.querySelector(".tab-link").click();
     }
+});
 </script>
 {% endblock %}

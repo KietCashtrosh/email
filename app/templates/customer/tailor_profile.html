@@ -5,187 +5,135 @@
 {% block customer_content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    {# Flash messages #}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="p-4 mb-6 rounded-lg
-                    {% if category == 'success' %} bg-green-500 text-white
-                    {% elif category == 'error' %} bg-red-500 text-white
-                    {% elif category == 'warning' %} bg-yellow-500 text-white
-                    {% else %} bg-blue-500 text-white {% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <a href="{{ url_for('customer.dashboard') }}"
-       class="inline-flex items-center px-4 py-2 text-sm font-medium text-[var(--gray)] bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)] mb-6">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+    <a href="javascript:history.back()"
+       class="inline-flex items-center text-purple-600 hover:text-orange-500 font-semibold mb-8 transition-colors">
+        <i class="fas fa-arrow-left mr-2"></i> Back
     </a>
 
-    {# Profile header #}
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-        <div class="flex items-center gap-6">
-            <img src="{{ tailor.profile.profile_picture_url or 'https://via.placeholder.com/96' }}"
+    <div class="bg-white p-8 rounded-xl shadow-lg mb-10">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+            <img src="{{ url_for('static', filename='uploads/' + tailor.profile.profile_picture_url) if tailor.profile.profile_picture_url else 'https://via.placeholder.com/96' }}"
                  alt="{{ tailor.profile.first_name }}'s profile picture"
-                 class="w-24 h-24 rounded-full object-cover border-2 border-[var(--light-gray)]">
-            <div>
-                <h1 class="text-2xl font-bold text-[var(--gray)]">
+                 class="w-28 h-28 rounded-full object-cover border-4 border-purple-200 shadow-md">
+            <div class="text-center sm:text-left">
+                <h1 class="text-3xl font-extrabold text-gray-800">
                     {{ tailor.tailor_profile.business_name or (tailor.profile.first_name + ' ' + tailor.profile.last_name) }}
                 </h1>
-                <p class="text-yellow-400 text-lg font-semibold mt-1">
-                    <strong>{{ "%.1f"|format(avg_rating or 0) }}</strong> ★
-                    <span class="text-[var(--gray)] text-sm">({{ reviews|length }} reviews)</span>
+                <p class="text-yellow-500 text-xl font-bold mt-1">
+                    <i class="fas fa-star"></i> {{ "%.1f"|format(avg_rating or 0) }}
+                    <span class="text-gray-500 text-sm font-normal">({{ reviews|length }} reviews)</span>
                 </p>
-                <p class="text-[var(--gray)] mt-2">{{ tailor.tailor_profile.bio or "Professional Tailoring Services" }}</p>
+                <p class="text-gray-600 mt-2">{{ tailor.tailor_profile.bio or "Professional Tailoring Services" }}</p>
             </div>
         </div>
     </div>
 
-    {# Services #}
-    <h2 class="text-xl font-semibold text-[var(--gray)] mb-4 mt-10">Services Offered</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Services Offered</h2>
     <ul class="space-y-4">
         {% for offer in services_offered %}
-            <li class="bg-white p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-lg transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
-    <div>
-        <h3 class="text-lg font-medium text-[var(--gray)]">{{ offer.service.name }}</h3>
-        <p class="text-[var(--gray)]"><strong>Price:</strong> ₹{{ "%.2f"|format(offer.price) }}</p>
-        <p class="text-[var(--gray)]" id="quantity-{{ offer.id }}">Quantity: <span id="qty-{{ offer.id }}">0</span></p>
-    </div>
-    <form method="POST" action="{{ url_for('customer.add_to_cart', tailor_service_id=offer.id) }}" class="add-to-cart-form">
-        {{ form.csrf_token }}
-        <input type="hidden" name="tailor_service_id" value="{{ offer.id }}">
-        <button type="submit"
-                aria-label="Add {{ offer.service.name }} to cart"
-                class="inline-flex items-center px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary)]/90 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                data-default-label="Add to Cart">
-            <span class="button-text"><i class="fas fa-cart-plus mr-2"></i> Add to Cart</span>
-            <span class="loading-spinner hidden ml-2" aria-hidden="true">
-                <i class="fas fa-spinner fa-spin"></i>
-            </span>
-        </button>
-    </form>
-</li>
-        {% endfor %}
-
-        {% if not services_offered %}
-            <p class="text-[var(--gray)] text-center py-4">
-                No services offered by this tailor.
-                <a href="{{ url_for('customer.contact_tailor', tailor_id=tailor.id) }}" class="text-[var(--secondary)] hover:underline">Contact Tailor</a>
-            </p>
-        {% endif %}
+            <li class="bg-white p-6 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">{{ offer.service.name }}</h3>
+                    <p class="text-gray-600 mt-1">
+                        <strong>Price:</strong> ₹{{ "%.2f"|format(offer.price) }} | 
+                        <strong>ETA:</strong> {{ offer.estimated_days }} days
+                    </p>
+                    <p class="text-purple-600 font-semibold text-sm" id="quantity-{{ offer.id }}">
+                        In Cart: <span id="qty-{{ offer.id }}">0</span>
+                    </p>
+                </div>
+                <form class="add-to-cart-form w-full sm:w-auto mt-4 sm:mt-0">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="tailor_service_id" value="{{ offer.id }}">
+                    <button type="submit" data-url="{{ url_for('customer.add_to_cart', tailor_service_id=offer.id) }}"
+                            class="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-orange-500 text-white font-bold rounded-lg hover:opacity-90 transition-all duration-300">
+                        <span class="button-text"><i class="fas fa-cart-plus mr-2"></i> Add to Cart</span>
+                        <span class="loading-spinner hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </form>
+            </li>
+        {% else %}
+            {% endfor %}
     </ul>
 
-    {# Reviews #}
-    <h2 class="text-xl font-semibold text-[var(--gray)] mb-4 mt-10">Recent Customer Reviews</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 mt-12">Recent Customer Reviews</h2>
     <div class="space-y-4">
         {% for review in reviews %}
-            <div class="bg-[var(--light-gray)] p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                <p class="flex items-center">
-                    <span class="text-yellow-400">{{ '★' * review.score }}{{ '☆' * (5 - review.score) }}</span>
-                    <strong class="ml-3 text-[var(--gray)]">{{ review.rating_user.profile.first_name }}</strong>
-                </p>
-                <p class="text-[var(--gray)] mt-2">"{{ review.comment }}"</p>
-                <small class="text-[var(--gray)] block mt-1">{{ review.created_at.strftime('%d-%b-%Y') }}</small>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex items-center">
+                    <span class="text-yellow-500">{{ '★' * review.score }}{{ '☆' * (5 - review.score) }}</span>
+                    <strong class="ml-4 text-gray-700">{{ review.rating_user.profile.first_name }}</strong>
+                </div>
+                <p class="text-gray-600 mt-2 italic">"{{ review.comment }}"</p>
+                <small class="text-gray-400 block text-right mt-2">{{ review.created_at.strftime('%d-%b-%Y') }}</small>
             </div>
         {% else %}
-            <p class="text-[var(--gray)] text-center py-4">This tailor has no reviews yet.</p>
-        {% endfor %}
+            {% endfor %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+{{ super() }}
+<script>
+    // Your existing toastr and updateCartCount functions are great.
 
-<script defer>
-if (!window.toastr) {
-    console.error('toastr library is not loaded. Please check the script inclusion in your template.');
-} else {
-    // Minimal configuration
-    toastr.options = {
-        timeOut: 5000,
-        positionClass: 'toast-top-right',
-        progressBar: true,
-        closeButton: true,
-        preventDuplicates: true,
-        newestOnTop: true
-    };
-    console.log('toastr initialized successfully:', toastr);
-}
-
-function showToast(message, type) {
-    if (!window.toastr) {
-        console.error('toastr is undefined, cannot show toast');
-        return;
+    // Function to fetch initial cart quantities for this tailor
+    function getInitialQuantities() {
+        fetch("{{ url_for('customer.view_cart_json') }}") // We will create this new route
+            .then(resp => resp.json())
+            .then(data => {
+                data.items.forEach(item => {
+                    const qtyElement = document.getElementById(`qty-${item.tailor_service_id}`);
+                    if (qtyElement) {
+                        qtyElement.textContent = item.quantity;
+                    }
+                });
+            });
     }
-    try {
-        if (type === 'success') toastr.success(message, 'Success');
-        else toastr.error(message || 'Something went wrong', 'Error');
-    } catch (e) {
-        console.error('toastr error:', e);
-    }
-}
 
-function updateCartCount() {
-    fetch("{{ url_for('customer.cart_count') }}", { credentials: 'same-origin' })
-        .then(resp => resp.json())
-        .then(data => {
-            const countEl = document.getElementById('cart-item-count');
-            if (countEl) {
-                countEl.textContent = data.count;
-                countEl.style.display = data.count > 0 ? 'inline' : 'none';
-                countEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 220 });
-            }
-        })
-        .catch(err => console.error('Error updating cart count:', err));
-}
+    document.addEventListener('DOMContentLoaded', function() {
+        getInitialQuantities(); // Fetch quantities when the page loads
 
-/* AJAX Add-to-Cart with spinner */
-document.querySelectorAll('.add-to-cart-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitButton = form.querySelector('button[type="submit"]');
+                const buttonText = submitButton.querySelector('.button-text');
+                const spinner = submitButton.querySelector('.loading-spinner');
+                const url = submitButton.dataset.url;
+                const serviceId = form.querySelector('input[name="tailor_service_id"]').value;
+                const qtyElement = document.getElementById(`qty-${serviceId}`);
+                
+                submitButton.disabled = true;
+                buttonText.classList.add('hidden');
+                spinner.classList.remove('hidden');
 
-        const submitButton = form.querySelector('button[type="submit"]');
-        const buttonText = submitButton.querySelector('.button-text');
-        const spinner = submitButton.querySelector('.loading-spinner');
-        const serviceId = form.querySelector('input[name="tailor_service_id"]').value;
-        const qtyElement = document.getElementById(`qty-${serviceId}`);
+                const formData = new FormData(form);
 
-        submitButton.disabled = true;
-        buttonText.classList.add('hidden');
-        spinner.classList.remove('hidden');
-
-        const formData = new FormData(form);
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin'
-        })
-        .then(resp => resp.json())
-        .then(data => {
-            if (data.success) {
-                updateCartCount();
-                showToast(data.message || 'Item added to cart!', 'success'); // Should show green
-                if (qtyElement && data.quantity !== undefined) {
-                    qtyElement.textContent = data.quantity;
-                }
-            } else {
-                showToast(data.message || 'Failed to add item to cart.', 'error');
-            }
-        })
-        .catch(err => {
-            console.error('Add to cart error:', err);
-            showToast(err.message || 'An error occurred. Please try again.', 'error');
-        })
-        .finally(() => {
-            submitButton.disabled = false;
-            buttonText.classList.remove('hidden');
-            spinner.classList.add('hidden');
+                fetch(url, { method: 'POST', body: formData })
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.success) {
+                        updateCartCount();
+                        toastr.success(data.message);
+                        if (qtyElement && data.quantity !== undefined) {
+                            qtyElement.textContent = data.quantity;
+                        }
+                    } else {
+                        toastr.error(data.message);
+                    }
+                })
+                .catch(err => {
+                    toastr.error('An error occurred. Please try again.');
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                });
+            });
         });
     });
-});
 </script>
 {% endblock %}

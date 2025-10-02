@@ -1,31 +1,48 @@
 {% extends "customer/base.html" %}
 {% block title %}Services for {{ profile.name }}{% endblock %}
+
 {% block customer_content %}
-<div class="max-w-5xl mx-auto">
-    <a href="{{ url_for('customer.dashboard') }}" class="text-[var(--secondary)] hover:underline mb-4 inline-block">&larr; Change Profile</a>
-    {% if show_all %}
-        <h2 class="text-2xl font-semibold text-[var(--gray)] text-center mb-4">Showing All Services</h2>
-        <div class="text-center mb-6">
-            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}" class="text-[var(--secondary)] hover:underline">Show Recommended for {{ profile.name }}</a>
-        </div>
-    {% else %}
-        <h2 class="text-2xl font-semibold text-[var(--gray)] text-center mb-4">Recommended Services for <strong>{{ profile.name }}</strong></h2>
-        <div class="text-center mb-6">
-            <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id, show='all') }}" class="text-[var(--secondary)] hover:underline">Show All Services</a>
-        </div>
-    {% endif %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div class="max-w-7xl mx-auto">
+    <a href="{{ url_for('customer.dashboard') }}" class="text-purple-600 hover:text-orange-500 font-semibold mb-6 inline-block transition-colors">&larr; Back to Profiles</a>
+    
+    <div class="text-center border-b border-gray-200 pb-6 mb-8">
+        {% if show_all %}
+            <h1 class="text-4xl font-extrabold text-gray-800">Showing All Services</h1>
+            <div class="mt-4">
+                <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id) }}" class="text-purple-600 font-semibold hover:underline">Show Recommended for {{ profile.name }}</a>
+            </div>
+        {% else %}
+            <h1 class="text-4xl font-extrabold text-gray-800">Recommended for <strong>{{ profile.name }}</strong></h1>
+            <div class="mt-4">
+                <a href="{{ url_for('customer.services_for_profile', profile_id=profile.id, show='all') }}" class="text-purple-600 font-semibold hover:underline">Show All Services</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {% for service in services %}
-            <a href="{{ url_for('customer.service_variations', service_id=service.id) }}" class="bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border-2 border-[var(--light-gray)] hover:border-[var(--primary)]">
-                {% if service.image_url %}
-                    <img src="{{ service.image_url }}" alt="{{ service.name }}" class="w-full h-32 object-cover rounded-t-lg">
-                {% else %}
-                    <img src="https://via.placeholder.com/200x120.png?text={{ service.name|replace(' ', '+') }}" alt="{{ service.name }}" class="w-full h-32 object-cover rounded-t-lg">
-                {% endif %}
-                <h3 class="text-lg font-semibold text-[var(--gray)] p-4">{{ service.name }}</h3>
+            <a href="{{ url_for('customer.service_variations', service_id=service.id) }}" 
+               class="group bg-white rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden">
+                
+                <div class="h-40 overflow-hidden">
+                    {% if service.image_url %}
+                        <img src="{{ url_for('static', filename='uploads/' + service.image_url) }}" alt="{{ service.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    {% else %}
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
+                    {% endif %}
+                </div>
+                
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-gray-800">{{ service.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ service.categories|join(', ') }}</p>
+                </div>
             </a>
         {% else %}
-            <p class="text-[var(--gray)]">No services found matching this filter.</p>
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-search fa-3x text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700">No Services Found</h3>
+                <p class="text-gray-500 mt-2">No services matched your filter. Try viewing all services.</p>
+            </div>
         {% endfor %}
     </div>
 </div>

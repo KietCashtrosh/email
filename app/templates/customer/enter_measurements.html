@@ -1,0 +1,46 @@
+{% extends "customer/base.html" %}
+{% block title %}Enter Measurements{% endblock %}
+
+{% block customer_content %}
+<div class="max-w-4xl mx-auto py-8">
+    <a href="{{ url_for('customer.checkout') }}" class="text-purple-600 hover:text-orange-500 font-semibold mb-6 inline-block">&larr; Back to Checkout Options</a>
+    <h1 class="text-3xl font-bold mb-6">Enter Your Measurements</h1>
+    
+    {% if saved_measurements_map %}
+        <div class="bg-purple-100 text-purple-800 p-4 rounded-lg mb-6 text-center">
+            <i class="fas fa-info-circle mr-2"></i> We've pre-filled the form with your saved measurements. Please review and confirm.
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        {% for item in cart.items %}
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <h3 class="text-xl font-bold text-purple-700 border-b pb-4 mb-4">
+                    {{ item.quantity }} x {{ item.tailor_service.service.name }}
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for field in item.tailor_service.custom_measurements %}
+                    <div>
+                        <label for="measurement_{{ item.id }}_{{ field.id }}" class="font-semibold">{{ field.name }} (inches)</label>
+                        
+                        <input type="number" step="0.1" 
+                               name="measurement_{{ item.id }}_{{ field.id }}" 
+                               id="measurement_{{ item.id }}_{{ field.id }}"
+                               value="{{ saved_measurements_map.get(item.id, {}).get(field.id, '') }}"
+                               class="w-full p-2 border rounded-md mt-1"
+                               required>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-purple-600 to-orange-500 text-white font-bold py-3 px-4 rounded-lg">
+            Submit Measurements & Proceed to Payment
+        </button>
+    </form>
+</div>
+{% endblock %}

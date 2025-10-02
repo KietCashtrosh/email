@@ -11,46 +11,70 @@
                 <h1 class="text-3xl font-extrabold text-gray-900 text-center mb-4">Edit Service: {{ service.name }}</h1>
                 <p class="text-gray-600 text-center mb-6">Update the details of your service offering.</p>
             </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mt-4 space-y-2">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-md {% if category == 'success' %}bg-green-100 text-green-700{% elif category == 'danger' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
             <form method="POST" enctype="multipart/form-data" class="mt-8 space-y-6">
+                {{ form.hidden_tag() }}
                 <div class="space-y-4">
                     <!-- Service Name Field -->
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Service Name <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" id="name" value="{{ service.name }}" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out">
+                        {{ form.name.label(class_="block text-sm font-medium text-gray-700") }}
+                        {{ form.name(class_="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out", required=True) }}
+                        {% if form.name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.name.errors[0] }}</p>
+                        {% endif %}
                     </div>
 
                     <!-- Service Image Field -->
                     <div>
-                        <label for="image_file" class="block text-sm font-medium text-gray-700">Change Service Image</label>
+                        {{ form.image_file.label(class_="block text-sm font-medium text-gray-700") }}
                         {% if service.image_url %}
                             <div class="mt-2">
                                 <p class="text-sm text-gray-600"><strong>Current Image:</strong></p>
                                 <img src="{{ url_for('static', filename='uploads/' + service.image_url) }}" alt="Current Image" class="mt-2 w-24 h-24 object-cover rounded-md border border-gray-200">
                             </div>
                         {% endif %}
-                        <input type="file" name="image_file" id="image_file" accept="image/png, image/jpeg, image/gif" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out">
+                        {{ form.image_file(class_="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out", accept="image/png,image/jpeg,image/gif") }}
                         <p class="mt-1 text-xs text-gray-500">Leave blank to keep the current image.</p>
+                        {% if form.image_file.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.image_file.errors[0] }}</p>
+                        {% endif %}
                     </div>
 
                     <!-- Categories Field -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Categories</label>
+                        <label for="category_ids" class="block text-sm font-medium text-gray-700">Categories</label>
                         <div class="mt-2 space-y-2">
-                            {% for category in categories %}
+                            {% for value, label in form.category_ids.choices %}
                                 <div class="flex items-center">
-                                    <input type="checkbox" name="category_ids" value="{{ category.id }}" id="cat_{{ category.id }}" {% if category.id in current_category_ids %}checked{% endif %} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <label for="cat_{{ category.id }}" class="ml-2 text-sm text-gray-900">{{ category.name }}</label>
+                                    <input type="checkbox" name="category_ids" value="{{ value }}" id="cat_{{ value }}"
+                                        {% if value in form.category_ids.data %}checked{% endif %}
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="cat_{{ value }}" class="ml-2 text-sm text-gray-900">{{ label }}</label>
                                 </div>
                             {% endfor %}
+                            {% if form.category_ids.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.category_ids.errors[0] }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
 
                 <!-- Submit and Cancel Buttons -->
                 <div class="flex flex-col space-y-4">
-                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ease-in-out">
-                        Update Service
-                    </button>
+                    {{ form.submit(class_="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ease-in-out") }}
                     <a href="{{ url_for('admin.services') }}" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ease-in-out text-center">
                         Cancel
                     </a>
