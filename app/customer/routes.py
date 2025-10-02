@@ -95,7 +95,6 @@ def order_history():
 @login_required
 def order_details(order_id):
     """Display detailed view of a specific order, including OTPs and delivery partner info."""
-    import pdb ; pdb.set_trace()
     order = Order.query.get_or_404(order_id)
     if order.customer_id != current_user.id:
         flash('You do not have permission to view this order.', 'danger')
